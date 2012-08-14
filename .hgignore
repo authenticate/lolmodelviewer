@@ -1,0 +1,6 @@
+syntax: glob
+
+*.suo
+
+LOLViewer/bin/
+LOLViewer/obj/
