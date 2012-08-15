@@ -1,4 +1,6 @@
 syntax: glob
-*bin/Debug/*
-*obj/*
+
 *.suo
+
+*/bin/
+*/obj/
