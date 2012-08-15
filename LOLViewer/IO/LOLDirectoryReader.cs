@@ -262,7 +262,7 @@ namespace LOLViewer.IO
             }
             else
             {
-               logger.LogError("Unable to find skn file: " + skns[def.skn]);
+               logger.LogError("Unable to find skn file: " + def.skn);
                return false;
             }
 
@@ -273,7 +273,7 @@ namespace LOLViewer.IO
             }
             else
             {
-                logger.LogError("Unable to find skl file: " + skls[def.skl]);
+                logger.LogError("Unable to find skl file: " + def.skl);
                 return false;
             }
 
@@ -284,7 +284,7 @@ namespace LOLViewer.IO
             }
             else
             {
-                logger.LogError("Unable to find texture file: " + textures[def.tex].FileName);
+                logger.LogError("Unable to find texture file: " + def.tex);
                 return false;
             }
 
