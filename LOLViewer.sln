@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LOLViewer", "LOLViewer\LOLV
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoLFileReader", "LoLFileReader\LoLFileReader.csproj", "{2A87B271-DBE0-4F60-AAE4-1702F5AB6561}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RAFlibPlus", "RAFlib-Plus\RAFlibPlus.csproj", "{BDF8E31B-A461-41A7-8361-07F10B40AD4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,16 @@ Global
 		{2A87B271-DBE0-4F60-AAE4-1702F5AB6561}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{2A87B271-DBE0-4F60-AAE4-1702F5AB6561}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2A87B271-DBE0-4F60-AAE4-1702F5AB6561}.Release|x86.ActiveCfg = Release|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

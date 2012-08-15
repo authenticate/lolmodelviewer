@@ -31,9 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="RAFlibPlus">
-      <HintPath>..\..\RAFlib-Plus\bin\Debug\RAFlibPlus.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,17 +38,19 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="wLib">
-      <HintPath>..\..\RAFlib-Plus\bin\Debug\wLib.dll</HintPath>
-    </Reference>
-    <Reference Include="zlib.net">
-      <HintPath>..\..\RAFlib-Plus\bin\Debug\zlib.net.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventLogger.cs" />
     <Compile Include="InibinFile.cs" />
+    <Compile Include="InibinHashIDs.cs" />
     <Compile Include="InibinReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RAFlib-Plus\RAFlibPlus.csproj">
+      <Project>{BDF8E31B-A461-41A7-8361-07F10B40AD4F}</Project>
+      <Name>RAFlibPlus</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

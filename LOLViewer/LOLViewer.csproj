@@ -58,9 +58,6 @@
     <Reference Include="OpenTK.GLControl">
       <HintPath>..\OpenTK\OpenTK.GLControl.dll</HintPath>
     </Reference>
-    <Reference Include="RAFlibPlus">
-      <HintPath>..\..\RAFlib-Plus\bin\Debug\RAFlibPlus.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.DirectoryServices" />
@@ -72,12 +69,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="wLib">
-      <HintPath>..\..\RAFlib-Plus\bin\Debug\wLib.dll</HintPath>
-    </Reference>
-    <Reference Include="zlib.net">
-      <HintPath>..\..\RAFlib-Plus\bin\Debug\zlib.net.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GL\GLAnimation.cs" />
@@ -202,6 +193,11 @@
     <ProjectReference Include="..\LoLFileReader\LoLFileReader.csproj">
       <Project>{2A87B271-DBE0-4F60-AAE4-1702F5AB6561}</Project>
       <Name>LoLFileReader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RAFlib-Plus\RAFlibPlus.csproj">
+      <Project>{BDF8E31B-A461-41A7-8361-07F10B40AD4F}</Project>
+      <Name>RAFlibPlus</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
