@@ -39,7 +39,7 @@ using System.Diagnostics;
 
 namespace LOLFileReader
 {
-    class ModelDefinition
+    public class ModelDefinition
     {
         public int skin;
         public String anmListKey; // for finding animation files.
@@ -59,7 +59,7 @@ namespace LOLFileReader
         }
     };
 
-    class InibinFile
+    public class InibinFile
     {
         public DirectoryInfo directory;
         public Dictionary<long, Object> properties;

@@ -36,7 +36,7 @@ using System.Text;
 
 namespace LOLFileReader
 {
-    public enum InibinHashID : long
+    internal enum InibinHashID : long
     {
         SKIN_ONE_NAME = 0L, // Unknown.  Based off of directory name?
         SKIN_ONE_SKN = 769344815L,

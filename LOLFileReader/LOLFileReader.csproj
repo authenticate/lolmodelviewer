@@ -45,6 +45,18 @@
     <Compile Include="InibinHashIDs.cs" />
     <Compile Include="InibinReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SKNFile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SKNMaterial.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SKNReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="SKNVertex.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RAFlib-Plus\RAFlibPlus.csproj">

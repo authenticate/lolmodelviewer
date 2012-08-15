@@ -51,7 +51,7 @@ using RAFlibPlus;
 
 namespace LOLFileReader
 {
-    class InibinReader
+    public class InibinReader
     {
         public static bool ReadCharacterInibin(RAFFileListEntry file, ref InibinFile data, EventLogger logger)
         {
@@ -583,7 +583,7 @@ namespace LOLFileReader
             return result;
         }
 
-        public static String ReadNullTerminatedString(ref MemoryStream s, int atOffset)
+        private static String ReadNullTerminatedString(ref MemoryStream s, int atOffset)
         {
             long oldPos = s.Position;
             s.Seek(atOffset, SeekOrigin.Begin);
