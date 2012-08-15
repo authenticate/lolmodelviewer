@@ -1,6 +1,7 @@
 syntax: glob
 
 *.suo
+*.dll
 
 LOLViewer/bin/
 LOLViewer/obj/

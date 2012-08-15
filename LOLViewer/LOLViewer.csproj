@@ -59,7 +59,7 @@
       <HintPath>..\OpenTK\OpenTK.GLControl.dll</HintPath>
     </Reference>
     <Reference Include="RAFlibPlus">
-      <HintPath>..\RAFManagerPlus\RAFlibPlus.dll</HintPath>
+      <HintPath>.\RAFlibPlus.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -193,6 +193,11 @@
     <Content Include="GUI\icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>copy "$(SolutionDir)RAFManagerPlus\bin\$(ConfigurationName)\RAFlibPlus.dll" "$(ProjectDir)"
+copy "$(SolutionDir)RAFManagerPlus\bin\$(ConfigurationName)\wLib.dll" "$(ProjectDir)"
+copy "$(SolutionDir)RAFManagerPlus\bin\$(ConfigurationName)\zlib.net.dll" "$(ProjectDir)"</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

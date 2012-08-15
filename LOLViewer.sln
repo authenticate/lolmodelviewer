@@ -2,6 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LOLViewer", "LOLViewer\LOLViewer.csproj", "{30DAB98B-9CBD-4FEB-808F-144A554AA18C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F} = {BDF8E31B-A461-41A7-8361-07F10B40AD4F}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RAFlibPlus", "RAFManagerPlus\RAFlibPlus.csproj", "{BDF8E31B-A461-41A7-8361-07F10B40AD4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +18,10 @@ Global
 		{30DAB98B-9CBD-4FEB-808F-144A554AA18C}.Debug|x86.Build.0 = Debug|x86
 		{30DAB98B-9CBD-4FEB-808F-144A554AA18C}.Release|x86.ActiveCfg = Release|x86
 		{30DAB98B-9CBD-4FEB-808F-144A554AA18C}.Release|x86.Build.0 = Release|x86
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Debug|x86.Build.0 = Debug|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Release|x86.ActiveCfg = Release|Any CPU
+		{BDF8E31B-A461-41A7-8361-07F10B40AD4F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
