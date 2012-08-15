@@ -1,7 +1,4 @@
 syntax: glob
-
+*bin/Debug/*
+*obj/*
 *.suo
-*.dll
-
-LOLViewer/bin/
-LOLViewer/obj/

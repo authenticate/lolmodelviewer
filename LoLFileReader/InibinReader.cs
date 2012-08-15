@@ -49,7 +49,7 @@ using System.Diagnostics;
 
 using RAFlibPlus;
 
-namespace LOLViewer.IO
+namespace LoLFileReader
 {
     class InibinReader
     {

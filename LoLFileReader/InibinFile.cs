@@ -37,7 +37,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
-namespace LOLViewer.IO
+namespace LoLFileReader
 {
     class ModelDefinition
     {
