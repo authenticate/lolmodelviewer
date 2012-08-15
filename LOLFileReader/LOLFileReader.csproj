@@ -40,6 +40,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ANMBone.cs" />
+    <Compile Include="ANMFile.cs" />
+    <Compile Include="ANMFrame.cs" />
+    <Compile Include="ANMListReader.cs" />
+    <Compile Include="ANMReader.cs" />
     <Compile Include="EventLogger.cs" />
     <Compile Include="InibinFile.cs" />
     <Compile Include="InibinHashIDs.cs" />
