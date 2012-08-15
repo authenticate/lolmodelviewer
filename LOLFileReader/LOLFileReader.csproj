@@ -45,6 +45,9 @@
     <Compile Include="InibinHashIDs.cs" />
     <Compile Include="InibinReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SKLBone.cs" />
+    <Compile Include="SKLFile.cs" />
+    <Compile Include="SKLReader.cs" />
     <Compile Include="SKNFile.cs">
       <SubType>Code</SubType>
     </Compile>
