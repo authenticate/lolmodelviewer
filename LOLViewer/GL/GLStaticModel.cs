@@ -36,6 +36,8 @@ using System.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
+using LOLFileReader;
+
 namespace LOLViewer
 {
     class GLStaticModel
@@ -50,7 +52,41 @@ namespace LOLViewer
             textureName = String.Empty;
         }
 
-        public bool Create(List<float> vertexData, List<float> normalData,
+        public bool Create(SKNFile file, EventLogger logger)
+        {
+            List<float> vData = new List<float>();
+            List<float> nData = new List<float>();
+            List<float> tData = new List<float>();
+            for (int i = 0; i < file.numVertices; ++i)
+            {
+                vData.Add(file.vertices[i].position[0]);
+                vData.Add(file.vertices[i].position[1]);
+                vData.Add(file.vertices[i].position[2]);
+
+                nData.Add(file.vertices[i].normal[0]);
+                nData.Add(file.vertices[i].normal[1]);
+                nData.Add(file.vertices[i].normal[2]);
+
+                tData.Add(file.vertices[i].texCoords[0]);
+                
+                // DDS Texture.
+                tData.Add(1.0f - file.vertices[i].texCoords[1]);
+            }
+
+            List<uint> iData = new List<uint>();
+            for (int i = 0; i < numIndices; ++i)
+            {
+                iData.Add((uint)file.indices[i]);
+            }
+
+            return Create(vData, nData, tData, iData, logger);
+        }
+
+        //
+        // Helper creation function.
+        //
+
+        private bool Create(List<float> vertexData, List<float> normalData,
             List<float> texData, List<uint> indexData, EventLogger logger)
         {
             bool result = true;

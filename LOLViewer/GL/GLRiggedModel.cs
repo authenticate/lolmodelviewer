@@ -36,6 +36,8 @@ using System.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
+using LOLFileReader;
+
 namespace LOLViewer
 {
     class GLRiggedModel

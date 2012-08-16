@@ -33,6 +33,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using LOLFileReader;
+
 namespace LOLViewer
 {
     class SKLFile
@@ -93,26 +95,20 @@ namespace LOLViewer
             for (int i = 0; i < skn.numVertices; ++i)
             {
                 // Position Information
-                vData.Add(skn.vertices[i].position.X);
-                vData.Add(skn.vertices[i].position.Y);
-                vData.Add(skn.vertices[i].position.Z);
+                vData.Add(skn.vertices[i].position[0]);
+                vData.Add(skn.vertices[i].position[1]);
+                vData.Add(skn.vertices[i].position[2]);
 
                 // Normal Information
-                nData.Add(skn.vertices[i].normal.X);
-                nData.Add(skn.vertices[i].normal.Y);
-                nData.Add(skn.vertices[i].normal.Z);
+                nData.Add(skn.vertices[i].normal[0]);
+                nData.Add(skn.vertices[i].normal[1]);
+                nData.Add(skn.vertices[i].normal[2]);
 
                 // Tex Coords Information
-                tData.Add(skn.vertices[i].texCoords.X);
-                if (usingDDSTexture == false)
-                {
-                    tData.Add(skn.vertices[i].texCoords.Y);
-                }
-                else
-                {
-                    // DDS Texture.
-                    tData.Add(1.0f - skn.vertices[i].texCoords.Y);
-                }
+                tData.Add(skn.vertices[i].texCoords[0]);
+                    
+                // DDS Texture.
+                tData.Add(1.0f - skn.vertices[i].texCoords[1]);
 
                 // Bone Index Information
                 for (int j = 0; j < SKNVertex.BONE_INDEX_SIZE; ++j)
@@ -121,10 +117,10 @@ namespace LOLViewer
                 }
 
                 // Bone Weight Information
-                wData.Add(skn.vertices[i].weights.X);
-                wData.Add(skn.vertices[i].weights.Y);
-                wData.Add(skn.vertices[i].weights.Z);
-                wData.Add(skn.vertices[i].weights.W);
+                wData.Add(skn.vertices[i].weights[0]);
+                wData.Add(skn.vertices[i].weights[1]);
+                wData.Add(skn.vertices[i].weights[2]);
+                wData.Add(skn.vertices[i].weights[3]);
             }
 
             // Other data

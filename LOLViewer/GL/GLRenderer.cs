@@ -33,10 +33,13 @@ using System.Linq;
 using System.Text;
 
 using System.IO;
+
 using LOLViewer.IO;
 
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+
+using LOLFileReader;
 
 namespace LOLViewer
 {
@@ -895,7 +898,7 @@ namespace LOLViewer
             GLStaticModel glModel = new GLStaticModel();
             if (result == true)
             {
-                result = file.ToGLStaticModel(ref glModel, true, logger);
+                result = glModel.Create(file, logger);
             }
 
             // Store it.
@@ -1011,7 +1014,7 @@ namespace LOLViewer
                 foreach (var a in model.animations)
                 {
                     ANMFile anmFile = new ANMFile();
-                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, logger);
+                    bool anmResult = LOLViewer.IO.ANMReader.Read(a.Value, ref anmFile, logger);
                     if (anmResult == true)
                     {
                         animationFiles.Add(a.Key, anmFile);

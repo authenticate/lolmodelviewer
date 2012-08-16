@@ -109,7 +109,6 @@
     <Compile Include="IO\ANMFrame.cs" />
     <Compile Include="IO\ANMListReader.cs" />
     <Compile Include="IO\ANMReader.cs" />
-    <Compile Include="IO\EventLogger.cs" />
     <Compile Include="IO\InibinFile.cs" />
     <Compile Include="IO\InibinHashIDs.cs" />
     <Compile Include="IO\InibinReader.cs" />
@@ -128,10 +127,6 @@
     <Compile Include="IO\SKLBone.cs" />
     <Compile Include="IO\SKLFile.cs" />
     <Compile Include="IO\SKLReader.cs" />
-    <Compile Include="IO\SKNFile.cs" />
-    <Compile Include="IO\SKNMaterial.cs" />
-    <Compile Include="IO\SKNReader.cs" />
-    <Compile Include="IO\SKNVertex.cs" />
     <Compile Include="GL\OpenTKExtras.cs" />
     <EmbeddedResource Include="GUI\AboutWindow.resx">
       <DependentUpon>AboutWindow.cs</DependentUpon>

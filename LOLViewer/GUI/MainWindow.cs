@@ -40,6 +40,9 @@ using System.Windows.Forms;
 using System.IO;
 
 using OpenTK;
+
+using LOLFileReader;
+
 using LOLViewer.IO;
 using LOLViewer.GUI;
 

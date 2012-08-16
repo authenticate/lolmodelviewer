@@ -34,7 +34,11 @@ using System.Text;
 
 using System.IO;
 using System.Windows.Forms;
+
 using OpenTK;
+
+using LOLFileReader;
+
 using RAFlibPlus;
 
 namespace LOLViewer

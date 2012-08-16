@@ -39,6 +39,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Windows.Forms;
 
+using LOLFileReader;
+
 using RAFlibPlus;
 
 namespace LOLViewer.IO

@@ -47,6 +47,8 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
+using LOLFileReader;
+
 using RAFlibPlus;
 
 namespace LOLViewer.IO

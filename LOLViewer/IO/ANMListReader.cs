@@ -38,6 +38,9 @@ using System.Linq;
 using System.Text;
 
 using System.IO;
+
+using LOLFileReader;
+
 using RAFlibPlus;
 
 namespace LOLViewer.IO
