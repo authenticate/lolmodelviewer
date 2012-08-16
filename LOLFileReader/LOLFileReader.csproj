@@ -33,11 +33,15 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Tao.DevIL">
+      <HintPath>Tao.DevIL\Tao.DevIL.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ANMBone.cs" />
@@ -45,6 +49,7 @@
     <Compile Include="ANMFrame.cs" />
     <Compile Include="ANMListReader.cs" />
     <Compile Include="ANMReader.cs" />
+    <Compile Include="DDSReader.cs" />
     <Compile Include="EventLogger.cs" />
     <Compile Include="InibinFile.cs" />
     <Compile Include="InibinHashIDs.cs" />
@@ -71,6 +76,14 @@
       <Project>{BDF8E31B-A461-41A7-8361-07F10B40AD4F}</Project>
       <Name>RAFlibPlus</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DevIL.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ILU.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
