@@ -88,14 +88,14 @@ namespace LOLViewer
         // Helper creation function.
         //
 
-        private bool Create(List<float> vertexData, List<float> normalData,
-            List<float> texData, List<uint> indexData, EventLogger logger)
+        private bool Create(List<float> vertexPositions, List<float> vertexNormals,
+            List<float> vertexTextureCoordinates, List<uint> indices, EventLogger logger)
         {
             bool result = true;
 
             logger.LogEvent("Creating OpenGL static model.");
 
-            numIndices = indexData.Count;
+            numIndices = indices.Count;
 
             // Create Vertex Array Object
             if (result == true)
@@ -147,8 +147,8 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Count * sizeof(float)),
-                    vertexData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexPositions.Count * sizeof(float)),
+                    vertexPositions.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             // Check for errors.
@@ -190,8 +190,8 @@ namespace LOLViewer
             // Set normal data.
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(normalData.Count * sizeof(float)),
-                    normalData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexNormals.Count * sizeof(float)),
+                    vertexNormals.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             // Check for errors.
@@ -233,8 +233,8 @@ namespace LOLViewer
             // Set Texture Coordinate Data
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(texData.Count * sizeof(float)),
-                    texData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexTextureCoordinates.Count * sizeof(float)),
+                    vertexTextureCoordinates.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             error = GL.GetError();
@@ -271,8 +271,8 @@ namespace LOLViewer
             // Set index data.
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indexData.Count * sizeof(uint)),
-                    indexData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Count * sizeof(uint)),
+                    indices.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             error = GL.GetError();
