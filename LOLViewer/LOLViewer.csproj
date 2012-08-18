@@ -107,7 +107,6 @@
     <Compile Include="IO\ANMBone.cs" />
     <Compile Include="IO\ANMFile.cs" />
     <Compile Include="IO\ANMFrame.cs" />
-    <Compile Include="IO\ANMListReader.cs" />
     <Compile Include="IO\ANMReader.cs" />
     <Compile Include="IO\LoaderDDS.cs" />
     <Compile Include="IO\LoaderStatics.cs" />
