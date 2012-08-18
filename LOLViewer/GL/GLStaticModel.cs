@@ -72,9 +72,7 @@ namespace LOLViewer
                 vertexNormals.Add(file.vertices[i].normal[2]);
 
                 vertexTextureCoordinates.Add(file.vertices[i].texCoords[0]);
-                
-                // DDS Texture.
-                vertexTextureCoordinates.Add(1.0f - file.vertices[i].texCoords[1]);
+                vertexTextureCoordinates.Add(file.vertices[i].texCoords[1]);
             }
 
             List<uint> iData = new List<uint>();

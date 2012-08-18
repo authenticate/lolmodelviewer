@@ -1044,30 +1044,6 @@ namespace LOLViewer
 
             return result;
         }
-        
-        private bool CreateTexture(FileInfo f, TextureTarget target,
-            GLTexture.SupportedImageEncodings encoding, TraceLogger logger)
-        {
-            bool result = true;
-
-            logger.LogEvent("Creating texture: " + f.Name + ": " + f.FullName);
-
-            GLTexture texture = new GLTexture();
-            result = texture.Create(f, target, encoding);
-
-            // Store new texture.
-            if (result == true)
-            {
-                textures.Add(f.Name, texture);
-            }
-            else
-            {
-                logger.LogError("Failed to create texture: " + f.Name + ": " + f.FullName);
-                texture.Destroy();
-            }
-
-            return result;
-        }
 
         private bool CreateTexture(RAFlibPlus.RAFFileListEntry f, TextureTarget target,
             GLTexture.SupportedImageEncodings encoding, TraceLogger logger)

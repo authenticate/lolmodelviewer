@@ -119,9 +119,7 @@ namespace LOLViewer
 
                 // Tex Coords Information
                 vertexTextureCoordinates.Add(skn.vertices[i].texCoords[0]);
-
-                // DDS Texture.
-                vertexTextureCoordinates.Add(1.0f - skn.vertices[i].texCoords[1]);
+                vertexTextureCoordinates.Add(skn.vertices[i].texCoords[1]);
 
                 // Bone Index Information
                 for (int j = 0; j < SKNVertex.BONE_INDEX_SIZE; ++j)
