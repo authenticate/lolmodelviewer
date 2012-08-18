@@ -23,8 +23,7 @@ along with LOLViewer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 //
-// Represents a joint from the default/binding pose
-// of a model.
+// Represents a bone from a specific key frame in an animation.
 //
 
 
@@ -35,24 +34,30 @@ using System.Text;
 
 using OpenTK;
 
-namespace LOLViewer
+namespace LOLViewer.Graphics
 {
-    class GLJoint
+    class GLBone
     {
         public int parent;
         public float scale;
-
-        public Vector3 worldPosition;
         public Quaternion worldOrientation;
-        public Matrix4 worldTransform;
+        public Vector3 worldPosition;
 
-        public GLJoint()
+        public String name;
+        public UInt32 flag;
+        public List<GLFrame> frames;
+
+        public GLBone()
         {
             // -1 reserved for root
             parent = -2;
-            scale = 1.0f;
+            scale = 0.0f;
             worldOrientation = Quaternion.Identity;
-            worldTransform = Matrix4.Identity;
+            worldPosition = Vector3.Zero;
+
+            name = String.Empty;
+            flag = 0;
+            frames = new List<GLFrame>();
         }
     }
 }

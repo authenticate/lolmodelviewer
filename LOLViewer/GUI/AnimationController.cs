@@ -36,6 +36,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
 
+using LOLViewer.Graphics;
+
 namespace LOLViewer.GUI
 {
     public class AnimationController

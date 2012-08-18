@@ -36,7 +36,7 @@ using System.Text;
 
 using OpenTK;
 
-namespace LOLViewer
+namespace LOLViewer.Graphics
 {
     class GLFrame
     {

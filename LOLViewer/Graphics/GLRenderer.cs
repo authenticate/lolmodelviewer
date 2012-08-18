@@ -41,7 +41,7 @@ using OpenTK.Graphics.OpenGL;
 
 using LOLFileReader;
 
-namespace LOLViewer
+namespace LOLViewer.Graphics
 {
     public class GLRenderer
     {

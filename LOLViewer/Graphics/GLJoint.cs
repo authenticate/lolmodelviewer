@@ -1,5 +1,4 @@
 ﻿
-
 /*
 LOLViewer
 Copyright 2011-2012 James Lammlein 
@@ -23,34 +22,37 @@ along with LOLViewer.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+//
+// Represents a joint from the default/binding pose
+// of a model.
+//
 
-//
-// Stores information required for skeletal animation in OpenGL.
-//
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace LOLViewer
+using OpenTK;
+
+namespace LOLViewer.Graphics
 {
-    class GLAnimation
+    class GLJoint
     {
-        public uint     playbackFPS;
-        public float    timePerFrame; 
+        public int parent;
+        public float scale;
 
-        public uint numberOfBones;
-        public uint numberOfFrames;
+        public Vector3 worldPosition;
+        public Quaternion worldOrientation;
+        public Matrix4 worldTransform;
 
-        public List<GLBone> bones;
-
-        public GLAnimation()
+        public GLJoint()
         {
-            playbackFPS = 0;
-            numberOfBones = 0;
-            numberOfFrames = 0;
-            bones = new List<GLBone>();
+            // -1 reserved for root
+            parent = -2;
+            scale = 1.0f;
+            worldOrientation = Quaternion.Identity;
+            worldTransform = Matrix4.Identity;
         }
     }
 }

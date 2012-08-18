@@ -42,7 +42,7 @@ using LOLFileReader;
 
 using LOLViewer.IO;
 
-namespace LOLViewer
+namespace LOLViewer.GUI
 {
     public partial class LoadingModelsWindow : Form
     {

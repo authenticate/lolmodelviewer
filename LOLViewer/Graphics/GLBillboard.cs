@@ -35,7 +35,7 @@ using System.Text;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 
-namespace LOLViewer
+namespace LOLViewer.Graphics
 {
     class GLBillboard
     {

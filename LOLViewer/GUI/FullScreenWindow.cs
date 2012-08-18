@@ -38,8 +38,11 @@ using System.Text;
 using System.Windows.Forms;
 
 using System.Diagnostics;
+
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
+
+using LOLViewer.Graphics;
 
 namespace LOLViewer.GUI
 {

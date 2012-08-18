@@ -41,7 +41,7 @@ using System.Windows.Forms;
 
 using OpenTK;
 
-namespace LOLViewer
+namespace LOLViewer.Graphics
 {
     public class GLCamera
     {

@@ -40,7 +40,7 @@ using LOLFileReader;
 
 using LOLViewer.IO;
 
-namespace LOLViewer
+namespace LOLViewer.Graphics
 {
     class GLStaticModel
     {

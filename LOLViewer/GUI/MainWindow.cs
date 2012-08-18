@@ -44,9 +44,9 @@ using OpenTK;
 using LOLFileReader;
 
 using LOLViewer.IO;
-using LOLViewer.GUI;
+using LOLViewer.Graphics;
 
-namespace LOLViewer
+namespace LOLViewer.GUI
 {
     public partial class MainWindow : Form
     {

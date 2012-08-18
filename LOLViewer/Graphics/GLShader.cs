@@ -34,7 +34,7 @@ using System.Text;
 using OpenTK.Graphics.OpenGL;
 using System.Diagnostics;
 
-namespace LOLViewer
+namespace LOLViewer.Graphics
 {
     class GLShader
     {

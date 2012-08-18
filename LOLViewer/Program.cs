@@ -28,6 +28,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
+using LOLViewer.GUI;
+
 namespace LOLViewer
 {
     static class Program

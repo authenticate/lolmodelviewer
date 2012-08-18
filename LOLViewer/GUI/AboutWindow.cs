@@ -36,7 +36,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace LOLViewer
+namespace LOLViewer.GUI
 {
     public partial class AboutWindow : Form
     {

@@ -71,21 +71,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GL\GLAnimation.cs" />
-    <Compile Include="GL\GLArcBall.cs" />
-    <Compile Include="GL\GLBillboard.cs" />
-    <Compile Include="GL\GLBone.cs" />
-    <Compile Include="GL\GLCamera.cs" />
-    <Compile Include="GL\GLFrame.cs" />
-    <Compile Include="GL\GLJoint.cs" />
-    <Compile Include="GL\GLRenderer.cs" />
-    <Compile Include="GL\GLRig.cs" />
-    <Compile Include="GL\GLRiggedModel.cs" />
-    <Compile Include="GL\GLShader.cs" />
-    <Compile Include="GL\GLShaderDefinitions.cs" />
-    <Compile Include="GL\GLShaderProgram.cs" />
-    <Compile Include="GL\GLStaticModel.cs" />
-    <Compile Include="GL\GLTexture.cs" />
+    <Compile Include="Graphics\GLAnimation.cs" />
+    <Compile Include="Graphics\GLArcBall.cs" />
+    <Compile Include="Graphics\GLBillboard.cs" />
+    <Compile Include="Graphics\GLBone.cs" />
+    <Compile Include="Graphics\GLCamera.cs" />
+    <Compile Include="Graphics\GLFrame.cs" />
+    <Compile Include="Graphics\GLJoint.cs" />
+    <Compile Include="Graphics\GLRenderer.cs" />
+    <Compile Include="Graphics\GLRig.cs" />
+    <Compile Include="Graphics\GLRiggedModel.cs" />
+    <Compile Include="Graphics\GLShader.cs" />
+    <Compile Include="Graphics\GLShaderDefinitions.cs" />
+    <Compile Include="Graphics\GLShaderProgram.cs" />
+    <Compile Include="Graphics\GLStaticModel.cs" />
+    <Compile Include="Graphics\GLTexture.cs" />
     <Compile Include="GUI\AboutWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -116,7 +116,7 @@
     <Compile Include="IO\TraceLogger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="GL\OpenTKExtras.cs" />
+    <Compile Include="OpenTKExtras.cs" />
     <EmbeddedResource Include="GUI\AboutWindow.resx">
       <DependentUpon>AboutWindow.cs</DependentUpon>
     </EmbeddedResource>

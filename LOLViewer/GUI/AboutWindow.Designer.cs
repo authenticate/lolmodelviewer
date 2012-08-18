@@ -26,7 +26,7 @@ along with LOLViewer.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-namespace LOLViewer
+namespace LOLViewer.GUI
 {
     partial class AboutWindow
     {
