@@ -600,11 +600,48 @@ namespace LOLViewer
             textureName = name;
         }
 
-        public void AddAnimation(String name, GLAnimation animation)
+        public void AddAnimation(String name, ANMFile animation)
         {
             if (animations.ContainsKey(name) == false)
             {
-                animations.Add(name, animation);
+                // Create the OpenGL animation wrapper.
+                GLAnimation glAnimation = new GLAnimation();
+
+                glAnimation.playbackFPS = animation.playbackFPS;
+                glAnimation.numberOfBones = animation.numberOfBones;
+                glAnimation.numberOfFrames = animation.numberOfFrames;
+
+                // Convert ANMBone to GLBone.
+                foreach (ANMBone bone in animation.bones)
+                {
+                    GLBone glBone = new GLBone();
+
+                    glBone.name = bone.name;
+                    glBone.flag = bone.flag;
+
+                    // Convert ANMFrame to GLFrame.
+                    foreach (ANMFrame frame in bone.frames)
+                    {
+                        GLFrame glFrame = new GLFrame();
+                        glFrame.position.X = frame.position[0];
+                        glFrame.position.Y = frame.position[1];
+                        glFrame.position.Z = frame.position[2];
+
+                        glFrame.orientation.X = frame.orientation[0];
+                        glFrame.orientation.Y = frame.orientation[1];
+                        glFrame.orientation.Z = frame.orientation[2];
+                        glFrame.orientation.W = frame.orientation[3];
+
+                        glBone.frames.Add(glFrame);
+                    }
+
+                    glAnimation.bones.Add(glBone);
+                }
+
+                glAnimation.timePerFrame = 1.0f / (float)animation.playbackFPS;
+
+                // Store the animation.
+                animations.Add(name, glAnimation);
             }
         }
 
@@ -639,14 +676,14 @@ namespace LOLViewer
                 return null;
             }
 
-            foreach (ANMBone bone in animations[currentAnimation].bones)
+            foreach (GLBone bone in animations[currentAnimation].bones)
             {
                 if (boneNameToIndex.ContainsKey(bone.name))
                 {
                     int index = boneNameToIndex[bone.name];
 
                     // For current frame.
-                    ANMFrame frame = bone.frames[currentFrame];
+                    GLFrame frame = bone.frames[currentFrame];
                     rig.CalculateWorldSpacePose(0, index, frame.orientation,
                         frame.position);
 

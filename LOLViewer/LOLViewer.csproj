@@ -76,6 +76,7 @@
     <Compile Include="GL\GLBillboard.cs" />
     <Compile Include="GL\GLBone.cs" />
     <Compile Include="GL\GLCamera.cs" />
+    <Compile Include="GL\GLFrame.cs" />
     <Compile Include="GL\GLJoint.cs" />
     <Compile Include="GL\GLRenderer.cs" />
     <Compile Include="GL\GLRig.cs" />
@@ -104,10 +105,6 @@
     <Compile Include="GUI\LoadingModelsWindow.Designer.cs">
       <DependentUpon>LoadingModelsWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="IO\ANMBone.cs" />
-    <Compile Include="IO\ANMFile.cs" />
-    <Compile Include="IO\ANMFrame.cs" />
-    <Compile Include="IO\ANMReader.cs" />
     <Compile Include="IO\LoaderDDS.cs" />
     <Compile Include="IO\LoaderStatics.cs" />
     <Compile Include="IO\LOLDirectoryReader.cs" />

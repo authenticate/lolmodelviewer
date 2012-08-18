@@ -1014,7 +1014,7 @@ namespace LOLViewer
                 foreach (var a in model.animations)
                 {
                     ANMFile anmFile = new ANMFile();
-                    bool anmResult = LOLViewer.IO.ANMReader.Read(a.Value, ref anmFile, logger);
+                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, logger);
                     if (anmResult == true)
                     {
                         animationFiles.Add(a.Key, anmFile);
@@ -1024,9 +1024,7 @@ namespace LOLViewer
                 bool currentSet = false;
                 foreach (var a in animationFiles)
                 {
-                    GLAnimation newAnimation = new GLAnimation();
-                    a.Value.ToGLAnimation(ref newAnimation);
-                    glModel.AddAnimation(a.Key, newAnimation);
+                    glModel.AddAnimation(a.Key, a.Value);
 
                     // Set a default animation.
                     if (currentSet == false)

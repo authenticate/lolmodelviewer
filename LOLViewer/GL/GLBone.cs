@@ -43,6 +43,10 @@ namespace LOLViewer
         public Quaternion worldOrientation;
         public Vector3 worldPosition;
 
+        public String name;
+        public UInt32 flag;
+        public List<GLFrame> frames;
+
         public GLBone()
         {
             // -1 reserved for root
@@ -50,6 +54,10 @@ namespace LOLViewer
             scale = 0.0f;
             worldOrientation = Quaternion.Identity;
             worldPosition = Vector3.Zero;
+
+            name = String.Empty;
+            flag = 0;
+            frames = new List<GLFrame>();
         }
     }
 }
