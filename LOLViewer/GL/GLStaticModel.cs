@@ -43,34 +43,36 @@ namespace LOLViewer
     class GLStaticModel
     {
         public int numIndices;
-        public int vao, vBuffer, iBuffer, tBuffer, nBuffer;
         public String textureName;
+
+        // OpenGL objects.
+        public int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer;
 
         public GLStaticModel() 
         {
-            vao = vBuffer = iBuffer = tBuffer = nBuffer = numIndices = 0;
+            vao = vertexPositionBuffer = indexBuffer = vertexTextureCoordinateBuffer = vertexNormalBuffer = numIndices = 0;
             textureName = String.Empty;
         }
 
         public bool Create(SKNFile file, EventLogger logger)
         {
-            List<float> vData = new List<float>();
-            List<float> nData = new List<float>();
-            List<float> tData = new List<float>();
+            List<float> vertexPositions = new List<float>();
+            List<float> vertexNormals = new List<float>();
+            List<float> vertexTextureCoordinates = new List<float>();
             for (int i = 0; i < file.numVertices; ++i)
             {
-                vData.Add(file.vertices[i].position[0]);
-                vData.Add(file.vertices[i].position[1]);
-                vData.Add(file.vertices[i].position[2]);
+                vertexPositions.Add(file.vertices[i].position[0]);
+                vertexPositions.Add(file.vertices[i].position[1]);
+                vertexPositions.Add(file.vertices[i].position[2]);
 
-                nData.Add(file.vertices[i].normal[0]);
-                nData.Add(file.vertices[i].normal[1]);
-                nData.Add(file.vertices[i].normal[2]);
+                vertexNormals.Add(file.vertices[i].normal[0]);
+                vertexNormals.Add(file.vertices[i].normal[1]);
+                vertexNormals.Add(file.vertices[i].normal[2]);
 
-                tData.Add(file.vertices[i].texCoords[0]);
+                vertexTextureCoordinates.Add(file.vertices[i].texCoords[0]);
                 
                 // DDS Texture.
-                tData.Add(1.0f - file.vertices[i].texCoords[1]);
+                vertexTextureCoordinates.Add(1.0f - file.vertices[i].texCoords[1]);
             }
 
             List<uint> iData = new List<uint>();
@@ -79,7 +81,7 @@ namespace LOLViewer
                 iData.Add((uint)file.indices[i]);
             }
 
-            return Create(vData, nData, tData, iData, logger);
+            return Create(vertexPositions, vertexNormals, vertexTextureCoordinates, iData, logger);
         }
 
         //
@@ -130,12 +132,12 @@ namespace LOLViewer
             // Store data and bind vertex buffer.
             if (result == true)
             {
-                vBuffer = buffers[0];
-                nBuffer = buffers[1];
-                tBuffer = buffers[2];
-                iBuffer = buffers[3];
+                vertexPositionBuffer = buffers[0];
+                vertexNormalBuffer = buffers[1];
+                vertexTextureCoordinateBuffer = buffers[2];
+                indexBuffer = buffers[3];
 
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexPositionBuffer);
             }
 
             //
@@ -182,7 +184,7 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ArrayBuffer, nBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexNormalBuffer);
             }
 
             // Set normal data.
@@ -225,7 +227,7 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ArrayBuffer, tBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexTextureCoordinateBuffer);
             }
 
             // Set Texture Coordinate Data
@@ -263,7 +265,7 @@ namespace LOLViewer
             // Bind index buffer.
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, iBuffer);
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
             }
 
             // Set index data.
@@ -313,28 +315,28 @@ namespace LOLViewer
                 vao = 0;
             }
 
-            if (vBuffer != 0)
+            if (vertexPositionBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref vBuffer);
-                vBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexPositionBuffer);
+                vertexPositionBuffer = 0;
             }
 
-            if (tBuffer != 0)
+            if (vertexTextureCoordinateBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref tBuffer);
-                tBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexTextureCoordinateBuffer);
+                vertexTextureCoordinateBuffer = 0;
             }
 
-            if (nBuffer != 0)
+            if (vertexNormalBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref nBuffer);
-                nBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexNormalBuffer);
+                vertexNormalBuffer = 0;
             }
 
-            if (iBuffer != 0)
+            if (indexBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref iBuffer);
-                iBuffer = 0;
+                GL.DeleteBuffers(1, ref indexBuffer);
+                indexBuffer = 0;
             }
 
             numIndices = 0;
