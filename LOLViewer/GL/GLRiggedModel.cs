@@ -80,8 +80,166 @@ namespace LOLViewer
             animations = new Dictionary<String, GLAnimation>();
         }
 
+        public bool Create(SKNFile skn, SKLFile skl, EventLogger logger)
+        {
+            bool result = true;
+
+            // Vertex Data
+            List<float> vData = new List<float>();
+            List<float> nData = new List<float>();
+            List<float> tData = new List<float>();
+            List<float> bData = new List<float>();
+            List<float> wData = new List<float>();
+
+            // Other data.
+            List<OpenTK.Quaternion> boData = new List<OpenTK.Quaternion>();
+            List<OpenTK.Vector3> bpData = new List<OpenTK.Vector3>();
+            List<String> bnData = new List<String>();
+            List<float> bsData = new List<float>();
+            List<int> bParentData = new List<int>();
+
+            for (int i = 0; i < skn.numVertices; ++i)
+            {
+                // Position Information
+                vData.Add(skn.vertices[i].position[0]);
+                vData.Add(skn.vertices[i].position[1]);
+                vData.Add(skn.vertices[i].position[2]);
+
+                // Normal Information
+                nData.Add(skn.vertices[i].normal[0]);
+                nData.Add(skn.vertices[i].normal[1]);
+                nData.Add(skn.vertices[i].normal[2]);
+
+                // Tex Coords Information
+                tData.Add(skn.vertices[i].texCoords[0]);
+
+                // DDS Texture.
+                tData.Add(1.0f - skn.vertices[i].texCoords[1]);
+
+                // Bone Index Information
+                for (int j = 0; j < SKNVertex.BONE_INDEX_SIZE; ++j)
+                {
+                    bData.Add(skn.vertices[i].boneIndex[j]);
+                }
+
+                // Bone Weight Information
+                wData.Add(skn.vertices[i].weights[0]);
+                wData.Add(skn.vertices[i].weights[1]);
+                wData.Add(skn.vertices[i].weights[2]);
+                wData.Add(skn.vertices[i].weights[3]);
+            }
+
+            // Other data
+            for (int i = 0; i < skl.numBones; ++i)
+            {
+                Quaternion orientation = Quaternion.Identity;
+                if (skl.version == 0)
+                {
+                    // Version 0 SKLs contain a quaternion.
+                    orientation.X = skl.bones[i].orientation[0];
+                    orientation.Y = skl.bones[i].orientation[1];
+                    orientation.Z = skl.bones[i].orientation[2];
+                    orientation.W = skl.bones[i].orientation[3];
+                }
+                else
+                {
+                    // Other SKLs contain a rotation matrix.
+
+                    // Create a matrix from the orientation values.
+                    Matrix4 transform = Matrix4.Identity;
+
+                    transform.M11 = skl.bones[i].orientation[0];
+                    transform.M21 = skl.bones[i].orientation[1];
+                    transform.M31 = skl.bones[i].orientation[2];
+
+                    transform.M12 = skl.bones[i].orientation[4];
+                    transform.M22 = skl.bones[i].orientation[5];
+                    transform.M32 = skl.bones[i].orientation[6];
+
+                    transform.M13 = skl.bones[i].orientation[8];
+                    transform.M23 = skl.bones[i].orientation[9];
+                    transform.M33 = skl.bones[i].orientation[10];
+
+                    // Convert the matrix to a quaternion.
+                    orientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(transform);
+                }
+
+                boData.Add(orientation);
+
+                // Create a vector from the position values.
+                Vector3 position = Vector3.Zero;
+                position.X = skl.bones[i].position[0];
+                position.Y = skl.bones[i].position[1];
+                position.Z = skl.bones[i].position[2];
+                bpData.Add(position);
+
+                bnData.Add(skl.bones[i].name);
+                bsData.Add(skl.bones[i].scale);
+                bParentData.Add(skl.bones[i].parentID);
+            }
+
+            //
+            // Version 0 SKL files are similar to the animation files.
+            // The bone positions and orientations are relative to their parent.
+            // So, we need to compute their absolute location by hand.
+            //
+            if (skl.version == 0)
+            {
+                //
+                // This algorithm is a little confusing since it's indexing identical data from
+                // the SKL file and the local variable List<>s. The indexing scheme works because
+                // the List<>s are created in the same order as the data in the SKL files.
+                //
+                for (int i = 0; i < skl.numBones; ++i)
+                {
+                    // Only update non root bones.
+                    if (skl.bones[i].parentID != -1)
+                    {
+                        // Determine the parent bone.
+                        int parentBoneID = skl.bones[i].parentID;
+
+                        // Update orientation.
+                        // Append quaternions for rotation transform B * A.
+                        boData[i] = boData[parentBoneID] * boData[i];
+
+                        Vector3 localPosition = Vector3.Zero;
+                        localPosition.X = skl.bones[i].position[0];
+                        localPosition.Y = skl.bones[i].position[1];
+                        localPosition.Z = skl.bones[i].position[2];
+
+                        // Update position.
+                        bpData[i] = bpData[parentBoneID] + Vector3.Transform(localPosition, boData[parentBoneID]);
+                    }
+                }
+            }
+
+            // Index Information
+            List<uint> iData = new List<uint>();
+            for (int i = 0; i < skn.numIndices; ++i)
+            {
+                iData.Add((uint)skn.indices[i]);
+            }
+
+            // Create
+            if (skl.version == 1)
+            {
+                result = Create((int)skl.version, vData, nData, tData,
+                    bData, wData, iData, boData, bpData,
+                    bsData, bnData, bParentData, logger);
+            }
+            else
+            {
+                result = Create((int)skl.version, vData, nData, tData,
+                    bData, wData, iData, boData, bpData,
+                    bsData, bnData, bParentData, skl.boneIDs, logger);
+            }
+
+            return result;
+        }
+
+
         // Version 0 and 2
-        public bool Create(int version, List<float> vertexData, List<float> normalData,
+        private bool Create(int version, List<float> vertexData, List<float> normalData,
             List<float> texData, List<float> boneData, List<float> weightData, List<uint> indexData,
             List<Quaternion> bOrientation, List<Vector3> bPosition, List<float> bScale,
             List<String> bName, List<int> bParent , List<uint> boneIDs, EventLogger logger)
@@ -111,7 +269,7 @@ namespace LOLViewer
         }
 
         // Version 1 Create
-        public bool Create(int version, List<float> vertexData, List<float> normalData,
+        private bool Create(int version, List<float> vertexData, List<float> normalData,
             List<float> texData, List<float> boneData, List<float> weightData, 
             List<uint> indexData, List<Quaternion> bOrientation, List<Vector3> bPosition,
             List<float> bScale, List<String> bName, List<int> bParent, EventLogger logger)

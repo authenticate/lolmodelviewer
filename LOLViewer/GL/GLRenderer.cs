@@ -962,7 +962,7 @@ namespace LOLViewer
             GLRiggedModel glModel = new GLRiggedModel();
             if (result == true)
             {
-                result = sklFile.ToGLRiggedModel(ref glModel, sknFile, true, logger);
+                result = glModel.Create(sknFile, sklFile, logger);
             }
 
             // Store it.
