@@ -121,7 +121,6 @@
     <Compile Include="IO\LOLModel.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="IO\SKLBone.cs" />
     <Compile Include="IO\SKLFile.cs" />
     <Compile Include="IO\SKLReader.cs" />
     <Compile Include="GL\OpenTKExtras.cs" />

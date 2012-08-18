@@ -125,31 +125,18 @@ namespace LOLViewer
                         bone.scale = file.ReadSingle();
 
                         // Read in transform matrix.
-                        float[] matrix = new float[SKLBone.TRANSFORM_SIZE];
-                        for (int j = 0; j < SKLBone.TRANSFORM_SIZE; ++j)
+                        float[] orientation = new float[SKLBone.ORIENTATION_SIZE];
+                        for (int j = 0; j < SKLBone.ORIENTATION_SIZE; ++j)
                         {
-                            matrix[j] = file.ReadSingle();
+                            orientation[j] = file.ReadSingle();
                         }
 
-                        Matrix4 orientationTransform = Matrix4.Identity;
-
-                        orientationTransform.M11 = matrix[0]; //
-                        orientationTransform.M21 = matrix[1]; // Column 1
-                        orientationTransform.M31 = matrix[2]; //
-                        
-                        orientationTransform.M12 = matrix[4]; //
-                        orientationTransform.M22 = matrix[5]; // Column 2
-                        orientationTransform.M32 = matrix[6]; //
-                        
-                        orientationTransform.M13 = matrix[8]; //
-                        orientationTransform.M23 = matrix[9]; // Column 3
-                        orientationTransform.M33 = matrix[10]; //
-
-                        bone.orientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(orientationTransform);
+                        bone.orientation = orientation;
 
                         // Position from matrix.
-                        Vector3 position = new Vector3(matrix[3], matrix[7], matrix[11]);
-                        bone.position = position;
+                        bone.position[0] = orientation[3];
+                        bone.position[1] = orientation[7];
+                        bone.position[2] = orientation[11];
 
                         data.bones.Add(bone);
                     }
@@ -204,18 +191,18 @@ namespace LOLViewer
 
                         float twoPointOne = file.ReadSingle();
 
-                        bone.position.X = file.ReadSingle();
-                        bone.position.Y = file.ReadSingle();
-                        bone.position.Z = file.ReadSingle();
+                        bone.position[0] = file.ReadSingle();
+                        bone.position[1] = file.ReadSingle();
+                        bone.position[2] = file.ReadSingle();
 
                         float one = file.ReadSingle(); // ? Maybe scales for X, Y, and Z
                         one = file.ReadSingle();
                         one = file.ReadSingle();
 
-                        bone.orientation.X = file.ReadSingle();
-                        bone.orientation.Y = file.ReadSingle();
-                        bone.orientation.Z = file.ReadSingle();
-                        bone.orientation.W = file.ReadSingle();
+                        bone.orientation[0] = file.ReadSingle();
+                        bone.orientation[1] = file.ReadSingle();
+                        bone.orientation[2] = file.ReadSingle();
+                        bone.orientation[3] = file.ReadSingle();
 
                         float ctx = file.ReadSingle(); // ctx
                         float cty = file.ReadSingle(); // cty
@@ -256,28 +243,6 @@ namespace LOLViewer
                         name = name.ToLower();
                         
                         data.bones[i].name = name;
-                    }
-
-                    // Converting to original format.
-                    for (int i = 0; i < data.numBones; ++i)
-                    {
-                        // Only update non root bones.
-                        if (data.bones[i].parentID != -1)
-                        {
-                            // Determine the parent bone.
-                            SKLBone parentBone = data.bones[ data.bones[i].parentID ];
-
-                            // Append quaternions for rotation transform B * A
-                            data.bones[i].orientation = parentBone.orientation * data.bones[i].orientation;
-
-                            Vector3 localPosition = Vector3.Zero;
-                            localPosition.X = data.bones[i].position.X;
-                            localPosition.Y = data.bones[i].position.Y;
-                            localPosition.Z = data.bones[i].position.Z;
-
-                            data.bones[i].position = parentBone.position +
-                                Vector3.Transform(localPosition, parentBone.orientation);
-                        }
                     }
                 }
                 // Unknown Version
