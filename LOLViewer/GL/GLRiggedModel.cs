@@ -43,14 +43,14 @@ namespace LOLViewer
     class GLRiggedModel
     {
         public int version;
-
         public int numIndices;
-        public int vao, vBuffer, iBuffer, tBuffer, nBuffer;
-
         public String textureName;
-        public int bBuffer, wBuffer;
 
         public GLRig rig;
+
+        // OpenGL objects.
+        public int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer,
+            vertexBoneBuffer, vertexBoneWeightBuffer;        
 
         // Not 100% if we need this.
         // Bones might map in order from the .anm files.
@@ -64,11 +64,10 @@ namespace LOLViewer
         public GLRiggedModel()
         {
             version = 0;
-
-            vao = vBuffer = iBuffer = tBuffer = nBuffer = numIndices = 0;
-
             textureName = String.Empty;
-            bBuffer = wBuffer = 0;
+
+            vao = vertexPositionBuffer = indexBuffer = vertexTextureCoordinateBuffer = vertexNormalBuffer = 
+                numIndices = vertexBoneBuffer = vertexBoneWeightBuffer = 0;
 
             rig = new GLRig();
 
@@ -80,53 +79,59 @@ namespace LOLViewer
             animations = new Dictionary<String, GLAnimation>();
         }
 
+        /// <summary>
+        /// Loads data from SKN and SKL files into OpenGL.
+        /// </summary>
+        /// <param name="skn">The .skn data.</param>
+        /// <param name="skl">The .skl data.</param>
+        /// <returns></returns>
         public bool Create(SKNFile skn, SKLFile skl, EventLogger logger)
         {
             bool result = true;
 
             // Vertex Data
-            List<float> vData = new List<float>();
-            List<float> nData = new List<float>();
-            List<float> tData = new List<float>();
-            List<float> bData = new List<float>();
-            List<float> wData = new List<float>();
+            List<float> vertexPositions = new List<float>();
+            List<float> vertexNormals = new List<float>();
+            List<float> vertexTextureCoordinates = new List<float>();
+            List<float> vertexBoneIndices = new List<float>();
+            List<float> vertexBoneWeights = new List<float>();
 
             // Other data.
-            List<OpenTK.Quaternion> boData = new List<OpenTK.Quaternion>();
-            List<OpenTK.Vector3> bpData = new List<OpenTK.Vector3>();
-            List<String> bnData = new List<String>();
-            List<float> bsData = new List<float>();
-            List<int> bParentData = new List<int>();
+            List<OpenTK.Quaternion> boneOrientations = new List<OpenTK.Quaternion>();
+            List<OpenTK.Vector3> bonePositions = new List<OpenTK.Vector3>();
+            List<String> boneNormals = new List<String>();
+            List<float> boneScales = new List<float>();
+            List<int> boneParents = new List<int>();
 
             for (int i = 0; i < skn.numVertices; ++i)
             {
                 // Position Information
-                vData.Add(skn.vertices[i].position[0]);
-                vData.Add(skn.vertices[i].position[1]);
-                vData.Add(skn.vertices[i].position[2]);
+                vertexPositions.Add(skn.vertices[i].position[0]);
+                vertexPositions.Add(skn.vertices[i].position[1]);
+                vertexPositions.Add(skn.vertices[i].position[2]);
 
                 // Normal Information
-                nData.Add(skn.vertices[i].normal[0]);
-                nData.Add(skn.vertices[i].normal[1]);
-                nData.Add(skn.vertices[i].normal[2]);
+                vertexNormals.Add(skn.vertices[i].normal[0]);
+                vertexNormals.Add(skn.vertices[i].normal[1]);
+                vertexNormals.Add(skn.vertices[i].normal[2]);
 
                 // Tex Coords Information
-                tData.Add(skn.vertices[i].texCoords[0]);
+                vertexTextureCoordinates.Add(skn.vertices[i].texCoords[0]);
 
                 // DDS Texture.
-                tData.Add(1.0f - skn.vertices[i].texCoords[1]);
+                vertexTextureCoordinates.Add(1.0f - skn.vertices[i].texCoords[1]);
 
                 // Bone Index Information
                 for (int j = 0; j < SKNVertex.BONE_INDEX_SIZE; ++j)
                 {
-                    bData.Add(skn.vertices[i].boneIndex[j]);
+                    vertexBoneIndices.Add(skn.vertices[i].boneIndex[j]);
                 }
 
                 // Bone Weight Information
-                wData.Add(skn.vertices[i].weights[0]);
-                wData.Add(skn.vertices[i].weights[1]);
-                wData.Add(skn.vertices[i].weights[2]);
-                wData.Add(skn.vertices[i].weights[3]);
+                vertexBoneWeights.Add(skn.vertices[i].weights[0]);
+                vertexBoneWeights.Add(skn.vertices[i].weights[1]);
+                vertexBoneWeights.Add(skn.vertices[i].weights[2]);
+                vertexBoneWeights.Add(skn.vertices[i].weights[3]);
             }
 
             // Other data
@@ -164,18 +169,18 @@ namespace LOLViewer
                     orientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(transform);
                 }
 
-                boData.Add(orientation);
+                boneOrientations.Add(orientation);
 
                 // Create a vector from the position values.
                 Vector3 position = Vector3.Zero;
                 position.X = skl.bones[i].position[0];
                 position.Y = skl.bones[i].position[1];
                 position.Z = skl.bones[i].position[2];
-                bpData.Add(position);
+                bonePositions.Add(position);
 
-                bnData.Add(skl.bones[i].name);
-                bsData.Add(skl.bones[i].scale);
-                bParentData.Add(skl.bones[i].parentID);
+                boneNormals.Add(skl.bones[i].name);
+                boneScales.Add(skl.bones[i].scale);
+                boneParents.Add(skl.bones[i].parentID);
             }
 
             //
@@ -200,7 +205,7 @@ namespace LOLViewer
 
                         // Update orientation.
                         // Append quaternions for rotation transform B * A.
-                        boData[i] = boData[parentBoneID] * boData[i];
+                        boneOrientations[i] = boneOrientations[parentBoneID] * boneOrientations[i];
 
                         Vector3 localPosition = Vector3.Zero;
                         localPosition.X = skl.bones[i].position[0];
@@ -208,30 +213,30 @@ namespace LOLViewer
                         localPosition.Z = skl.bones[i].position[2];
 
                         // Update position.
-                        bpData[i] = bpData[parentBoneID] + Vector3.Transform(localPosition, boData[parentBoneID]);
+                        bonePositions[i] = bonePositions[parentBoneID] + Vector3.Transform(localPosition, boneOrientations[parentBoneID]);
                     }
                 }
             }
 
             // Index Information
-            List<uint> iData = new List<uint>();
+            List<uint> indices = new List<uint>();
             for (int i = 0; i < skn.numIndices; ++i)
             {
-                iData.Add((uint)skn.indices[i]);
+                indices.Add((uint)skn.indices[i]);
             }
 
             // Create
             if (skl.version == 1)
             {
-                result = Create((int)skl.version, vData, nData, tData,
-                    bData, wData, iData, boData, bpData,
-                    bsData, bnData, bParentData, logger);
+                result = Create((int)skl.version, vertexPositions, vertexNormals, vertexTextureCoordinates,
+                    vertexBoneIndices, vertexBoneWeights, indices, boneOrientations, bonePositions,
+                    boneScales, boneNormals, boneParents, logger);
             }
             else
             {
-                result = Create((int)skl.version, vData, nData, tData,
-                    bData, wData, iData, boData, bpData,
-                    bsData, bnData, bParentData, skl.boneIDs, logger);
+                result = Create((int)skl.version, vertexPositions, vertexNormals, vertexTextureCoordinates,
+                    vertexBoneIndices, vertexBoneWeights, indices, boneOrientations, bonePositions,
+                    boneScales, boneNormals, boneParents, skl.boneIDs, logger);
             }
 
             return result;
@@ -239,58 +244,58 @@ namespace LOLViewer
 
 
         // Version 0 and 2
-        private bool Create(int version, List<float> vertexData, List<float> normalData,
-            List<float> texData, List<float> boneData, List<float> weightData, List<uint> indexData,
-            List<Quaternion> bOrientation, List<Vector3> bPosition, List<float> bScale,
-            List<String> bName, List<int> bParent , List<uint> boneIDs, EventLogger logger)
+        private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
+            List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights, List<uint> indices,
+            List<Quaternion> boneOrientations, List<Vector3> bonePositions, List<float> boneScales,
+            List<String> boneNames, List<int> boneParents , List<uint> boneIDs, EventLogger logger)
         {
             // Depending on the version of the model, the look ups change.
             if (version == 2 || version == 0)
             {
-                for (int i = 0; i < boneData.Count; ++i)
+                for (int i = 0; i < vertexBoneIndices.Count; ++i)
                 {
                     // I don't know why things need remapped, but they do.
 
                     // Sanity
-                    if (boneData[i] < boneIDs.Count)
+                    if (vertexBoneIndices[i] < boneIDs.Count)
                     {
-                        boneData[i] = boneIDs[(int)boneData[i]];
+                        vertexBoneIndices[i] = boneIDs[(int)vertexBoneIndices[i]];
                     }
                     else
                     {
-                        boneData[i] = 0;
+                        vertexBoneIndices[i] = 0;
                     }
                 }
             }
 
             // Call the version 1 create with the remapped bone data.
-            return Create(version, vertexData, normalData, texData, boneData, weightData, indexData,
-                bOrientation, bPosition, bScale, bName, bParent, logger);
+            return Create(version, vertexPositions, vertexNormals, vertexTextureCoordinates, vertexBoneIndices, vertexBoneWeights, indices,
+                boneOrientations, bonePositions, boneScales, boneNames, boneParents, logger);
         }
 
         // Version 1 Create
-        private bool Create(int version, List<float> vertexData, List<float> normalData,
-            List<float> texData, List<float> boneData, List<float> weightData, 
-            List<uint> indexData, List<Quaternion> bOrientation, List<Vector3> bPosition,
-            List<float> bScale, List<String> bName, List<int> bParent, EventLogger logger)
+        private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
+            List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights, 
+            List<uint> indices, List<Quaternion> boneOrientations, List<Vector3> bonePositions,
+            List<float> boneScales, List<String> boneNames, List<int> boneParents, EventLogger logger)
         {
             bool result = true;
 
             this.version = version;
-            this.numIndices = indexData.Count;
+            this.numIndices = indices.Count;
 
             logger.LogEvent("Creating GL rigged model.");
 
             // Create the initial binding joints.
-            rig.Create(bOrientation, bPosition, bScale, bParent);
+            rig.Create(boneOrientations, bonePositions, boneScales, boneParents);
 
             // Store the bone transforms.
-            for (int i = 0; i < bOrientation.Count; ++i)
+            for (int i = 0; i < boneOrientations.Count; ++i)
             {
                 // Sanity
-                if( boneNameToIndex.ContainsKey( bName[i] ) == false )
+                if( boneNameToIndex.ContainsKey( boneNames[i] ) == false )
                 {
-                    boneNameToIndex.Add(bName[i], i);
+                    boneNameToIndex.Add(boneNames[i], i);
                 }
             }
 
@@ -329,14 +334,14 @@ namespace LOLViewer
             // Store data and bind vertex buffer.
             if (result == true)
             {
-                vBuffer = buffers[0];
-                nBuffer = buffers[1];
-                tBuffer = buffers[2];
-                bBuffer = buffers[3];
-                wBuffer = buffers[4];
-                iBuffer = buffers[5];
+                vertexPositionBuffer = buffers[0];
+                vertexNormalBuffer = buffers[1];
+                vertexTextureCoordinateBuffer = buffers[2];
+                vertexBoneBuffer = buffers[3];
+                vertexBoneWeightBuffer = buffers[4];
+                indexBuffer = buffers[5];
 
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexPositionBuffer);
             }
 
             //
@@ -346,8 +351,8 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Count * sizeof(float)),
-                    vertexData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexPositions.Count * sizeof(float)),
+                    vertexPositions.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             // Check for errors.
@@ -383,14 +388,14 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ArrayBuffer, nBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexNormalBuffer);
             }
 
             // Set normal data.
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(normalData.Count * sizeof(float)),
-                    normalData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexNormals.Count * sizeof(float)),
+                    vertexNormals.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             // Check for errors.
@@ -426,14 +431,14 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ArrayBuffer, tBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexTextureCoordinateBuffer);
             }
 
             // Set Texture Coordinate Data
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(texData.Count * sizeof(float)),
-                    texData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexTextureCoordinates.Count * sizeof(float)),
+                    vertexTextureCoordinates.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             error = GL.GetError();
@@ -469,14 +474,14 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ArrayBuffer, bBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBoneBuffer);
             }
 
             // Set bone index data
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(boneData.Count * sizeof(float)),
-                    boneData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexBoneIndices.Count * sizeof(float)),
+                    vertexBoneIndices.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             error = GL.GetError();
@@ -511,14 +516,14 @@ namespace LOLViewer
             //
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ArrayBuffer, wBuffer);
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBoneWeightBuffer);
             }
 
             // Set bone weight data
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(weightData.Count * sizeof(float)),
-                    weightData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertexBoneWeights.Count * sizeof(float)),
+                    vertexBoneWeights.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             error = GL.GetError();
@@ -552,14 +557,14 @@ namespace LOLViewer
 
             if (result == true)
             {
-                GL.BindBuffer(BufferTarget.ElementArrayBuffer, iBuffer);
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
             }
 
             // Set index data.
             if (result == true)
             {
-                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indexData.Count * sizeof(uint)),
-                    indexData.ToArray(), BufferUsageHint.StaticDraw);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Count * sizeof(uint)),
+                    indices.ToArray(), BufferUsageHint.StaticDraw);
             }
 
             error = GL.GetError();
@@ -735,40 +740,40 @@ namespace LOLViewer
                 vao = 0;
             }
 
-            if (vBuffer != 0)
+            if (vertexPositionBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref vBuffer);
-                vBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexPositionBuffer);
+                vertexPositionBuffer = 0;
             }
 
-            if (tBuffer != 0)
+            if (vertexTextureCoordinateBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref tBuffer);
-                tBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexTextureCoordinateBuffer);
+                vertexTextureCoordinateBuffer = 0;
             }
 
-            if (nBuffer != 0)
+            if (vertexNormalBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref nBuffer);
-                nBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexNormalBuffer);
+                vertexNormalBuffer = 0;
             }
 
-            if (iBuffer != 0)
+            if (indexBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref iBuffer);
-                iBuffer = 0;
+                GL.DeleteBuffers(1, ref indexBuffer);
+                indexBuffer = 0;
             }
 
-            if (bBuffer != 0)
+            if (vertexBoneBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref bBuffer);
-                bBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexBoneBuffer);
+                vertexBoneBuffer = 0;
             }
 
-            if (wBuffer != 0)
+            if (vertexBoneWeightBuffer != 0)
             {
-                GL.DeleteBuffers(1, ref wBuffer);
-                wBuffer = 0;
+                GL.DeleteBuffers(1, ref vertexBoneWeightBuffer);
+                vertexBoneWeightBuffer = 0;
             }
 
             numIndices = 0;
