@@ -47,16 +47,24 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
+using LOLFileReader.Diagnostics;
+
 using RAFlibPlus;
 
 namespace LOLFileReader
 {
     public class InibinReader
     {
-        public static bool ReadCharacterInibin(RAFFileListEntry file, ref InibinFile data, EventLogger logger)
+        public static bool Read(RAFFileListEntry file, ref InibinFile data)
+        {
+            return Read(file, ref data, false);
+        }
+
+        public static bool Read(RAFFileListEntry file, ref InibinFile data, bool enableLogging)
         {
             bool result = true;
-            
+
+            TraceLogger logger = new TraceLogger(enableLogging);
             logger.LogEvent("Reading inibin: " + file.FileName);
 
             try
@@ -85,7 +93,7 @@ namespace LOLFileReader
             return result;
         }
 
-        public static bool ReadCharacterInibin(MemoryStream stream, ref InibinFile file, EventLogger logger)
+        private static bool ReadCharacterInibin(MemoryStream stream, ref InibinFile file, TraceLogger logger)
         {
  	        bool result = true;
 

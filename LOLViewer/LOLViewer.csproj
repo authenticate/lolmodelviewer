@@ -115,6 +115,7 @@
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="IO\LOLModel.cs" />
+    <Compile Include="IO\TraceLogger.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GL\OpenTKExtras.cs" />

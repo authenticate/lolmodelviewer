@@ -34,16 +34,24 @@ using System.Text;
 
 using System.IO;
 
+using LOLFileReader.Diagnostics;
+
 using RAFlibPlus;
 
 namespace LOLFileReader
 {
     public class SKLReader
     {
-        public static bool Read(RAFFileListEntry file, ref SKLFile data, EventLogger logger)
+        public static bool Read(RAFFileListEntry file, ref SKLFile data)
+        {
+            return Read(file, ref data, false);
+        }
+
+        public static bool Read(RAFFileListEntry file, ref SKLFile data, bool enableLogging)
         {
             bool result = true;
 
+            TraceLogger logger = new TraceLogger(enableLogging);
             logger.LogEvent("Reading skl: " + file.FileName);
 
             try
@@ -68,7 +76,7 @@ namespace LOLFileReader
         // (Because nested Try/Catch looks nasty in one function block.)
         //
 
-        private static bool ReadBinary(MemoryStream input, ref SKLFile data, EventLogger logger)
+        private static bool ReadBinary(MemoryStream input, ref SKLFile data, TraceLogger logger)
         {
             bool result = true;
 
@@ -88,7 +96,7 @@ namespace LOLFileReader
             return result;
         }
 
-        private static bool ReadData(BinaryReader file, ref SKLFile data, EventLogger logger)
+        private static bool ReadData(BinaryReader file, ref SKLFile data, TraceLogger logger)
         {
             bool result = true;
 

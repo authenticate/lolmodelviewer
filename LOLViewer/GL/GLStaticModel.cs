@@ -38,6 +38,8 @@ using OpenTK.Graphics.OpenGL;
 
 using LOLFileReader;
 
+using LOLViewer.IO;
+
 namespace LOLViewer
 {
     class GLStaticModel
@@ -54,7 +56,7 @@ namespace LOLViewer
             textureName = String.Empty;
         }
 
-        public bool Create(SKNFile file, EventLogger logger)
+        public bool Create(SKNFile file, TraceLogger logger)
         {
             List<float> vertexPositions = new List<float>();
             List<float> vertexNormals = new List<float>();
@@ -89,7 +91,7 @@ namespace LOLViewer
         //
 
         private bool Create(List<float> vertexPositions, List<float> vertexNormals,
-            List<float> vertexTextureCoordinates, List<uint> indices, EventLogger logger)
+            List<float> vertexTextureCoordinates, List<uint> indices, TraceLogger logger)
         {
             bool result = true;
 

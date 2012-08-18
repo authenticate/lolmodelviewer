@@ -35,6 +35,8 @@ using System.Text;
 
 using System.IO;
 
+using LOLFileReader.Diagnostics;
+
 using RAFlibPlus;
 
 namespace LOLFileReader
@@ -47,10 +49,22 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref SKNFile data, EventLogger logger)
+        public static bool Read(RAFFileListEntry file, ref SKNFile data)
+        {
+            return Read(file, ref data, false);
+        }
+
+        /// <summary>
+        /// Read in binary .skn file from RAF.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="data">The contents of the file are stored in here.</param>
+        /// <returns></returns>
+        public static bool Read(RAFFileListEntry file, ref SKNFile data, bool enableLogging)
         {
             bool result = true;
 
+            TraceLogger logger = new TraceLogger(enableLogging);
             logger.LogEvent("Reading skn: " + file.FileName);
 
             try
@@ -75,7 +89,7 @@ namespace LOLFileReader
         // (Because nested Try/Catch looks nasty in one function block.)
         //
 
-        private static bool ReadBinary(MemoryStream input, ref SKNFile data, EventLogger logger)
+        private static bool ReadBinary(MemoryStream input, ref SKNFile data, TraceLogger logger)
         {
             bool result = true;
 
@@ -95,7 +109,7 @@ namespace LOLFileReader
             return result;
         }
 
-        private static bool ReadData(BinaryReader file, ref SKNFile data, EventLogger logger)
+        private static bool ReadData(BinaryReader file, ref SKNFile data, TraceLogger logger)
         {
             bool result = true;
 

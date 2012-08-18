@@ -91,7 +91,7 @@ namespace LOLViewer.IO
             root = s;
         }
 
-        public bool Read( EventLogger logger )
+        public bool Read(TraceLogger logger)
         {
             bool result = true;
 
@@ -185,7 +185,7 @@ namespace LOLViewer.IO
             foreach( RAFFileListEntry f in inibins )
             {
                 InibinFile iniFile = new InibinFile();
-                bool readResult = InibinReader.ReadCharacterInibin(f, ref iniFile, logger);
+                bool readResult = InibinReader.Read(f, ref iniFile, true);
 
                 if (readResult == true)
                 {
@@ -251,7 +251,7 @@ namespace LOLViewer.IO
             return result;
         }
 
-        private bool StoreModel(ModelDefinition def, out LOLModel model, EventLogger logger)
+        private bool StoreModel(ModelDefinition def, out LOLModel model, TraceLogger logger)
         {
             model = new LOLModel();
             model.skinNumber = def.skin;
@@ -293,7 +293,7 @@ namespace LOLViewer.IO
             return true;
         }
 
-        private bool StoreAnimations(ref LOLModel model, EventLogger logger)
+        private bool StoreAnimations(ref LOLModel model, TraceLogger logger)
         {
             bool result = true;
 
@@ -303,8 +303,8 @@ namespace LOLViewer.IO
             // Sanity
             if (animationLists.ContainsKey(model.animationList) == true)
             {
-                result = ANMListReader.ReadAnimationList(model.skinNumber - 1, // indexing in animations.list assumes the original skin to be -1
-                    animationLists[model.animationList], ref animationStrings, logger);
+                result = ANMListReader.Read(model.skinNumber - 1, // indexing in animations.list assumes the original skin to be -1
+                    animationLists[model.animationList], ref animationStrings, true);
             }
             else
             {
@@ -384,7 +384,7 @@ namespace LOLViewer.IO
         // Helper functions for reading the directory structure.
         //
 
-        private bool ReadDirectory(DirectoryInfo dir, EventLogger logger)
+        private bool ReadDirectory(DirectoryInfo dir, TraceLogger logger)
         {
             bool result = true;
 
@@ -440,7 +440,7 @@ namespace LOLViewer.IO
             return result;
         }
 
-        private bool OpenDirectory(DirectoryInfo dir, EventLogger logger)
+        private bool OpenDirectory(DirectoryInfo dir, TraceLogger logger)
         {
             bool result = true;
 
@@ -465,7 +465,7 @@ namespace LOLViewer.IO
             return result;
         }
 
-        private bool OpenModelsRoot(DirectoryInfo dir, EventLogger logger)
+        private bool OpenModelsRoot(DirectoryInfo dir, TraceLogger logger)
         {
             bool result = true;
 
@@ -493,7 +493,7 @@ namespace LOLViewer.IO
             return result;
         }
 
-        private bool OpenGameClientVersion(DirectoryInfo dir, EventLogger logger)
+        private bool OpenGameClientVersion(DirectoryInfo dir, TraceLogger logger)
         {
             bool result = true;
 
@@ -525,7 +525,7 @@ namespace LOLViewer.IO
             return result;
         }
 
-        private bool ReadRAF(FileInfo f, ref RAFArchive archive, EventLogger logger)
+        private bool ReadRAF(FileInfo f, ref RAFArchive archive, TraceLogger logger)
         {
             bool result = true;
 

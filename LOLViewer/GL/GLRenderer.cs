@@ -89,7 +89,7 @@ namespace LOLViewer
             }
         }
 
-        public bool OnLoad(EventLogger logger)
+        public bool OnLoad(TraceLogger logger)
         {
             bool result = true;
 
@@ -362,7 +362,7 @@ namespace LOLViewer
             GL.ClearColor(clearColor);
         }
 
-        public bool LoadModel(LOLModel model, EventLogger logger)
+        public bool LoadModel(LOLModel model, TraceLogger logger)
         {
             bool result = true;
 
@@ -735,7 +735,7 @@ namespace LOLViewer
         // TODO: Alot of this code is a mess.
         // It should be refactored into more meaningful sub classes.
 
-        private bool CreateShaderFromMemory(String name, String data, ShaderType type, EventLogger logger)
+        private bool CreateShaderFromMemory(String name, String data, ShaderType type, TraceLogger logger)
         {
             bool result = true;
 
@@ -764,7 +764,7 @@ namespace LOLViewer
         }
 
         private bool CreateProgram(String progName, String vertName, String fragName,
-            List<String> attributes, List<String> uniforms, EventLogger logger) 
+            List<String> attributes, List<String> uniforms, TraceLogger logger) 
         {
             bool result = true;
 
@@ -859,7 +859,7 @@ namespace LOLViewer
         }
 
         private bool CreateBillboard( String name, List<float> vertexData,
-            List<float> texData, List<uint> indexData, EventLogger logger )
+            List<float> texData, List<uint> indexData, TraceLogger logger)
         {
             bool result = true;
 
@@ -882,7 +882,7 @@ namespace LOLViewer
             return result;
         }
 
-        private bool CreateStaticModel(LOLModel model, EventLogger logger)
+        private bool CreateStaticModel(LOLModel model, TraceLogger logger)
         {
             bool result = true;
 
@@ -892,7 +892,7 @@ namespace LOLViewer
             if (result == true)
             {
                 // Model is stored in a RAF.
-                result = SKNReader.Read(model.skn, ref file, logger);             
+                result = SKNReader.Read(model.skn, ref file, true);             
             }
 
             GLStaticModel glModel = new GLStaticModel();
@@ -940,7 +940,7 @@ namespace LOLViewer
             return result;
         }
 
-        private bool CreateRiggedModel(LOLModel model, EventLogger logger)
+        private bool CreateRiggedModel(LOLModel model, TraceLogger logger)
         {
             bool result = true;
 
@@ -950,13 +950,13 @@ namespace LOLViewer
             if (result == true)
             {
                 // Model is stored in a RAF.
-                result = SKNReader.Read(model.skn, ref sknFile, logger);
+                result = SKNReader.Read(model.skn, ref sknFile, true);
             }
 
             SKLFile sklFile = new SKLFile();
             if (result == true)
             {
-                result = SKLReader.Read(model.skl, ref sklFile, logger);
+                result = SKLReader.Read(model.skl, ref sklFile, true);
             }
 
             GLRiggedModel glModel = new GLRiggedModel();
@@ -1014,7 +1014,7 @@ namespace LOLViewer
                 foreach (var a in model.animations)
                 {
                     ANMFile anmFile = new ANMFile();
-                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, logger);
+                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, true);
                     if (anmResult == true)
                     {
                         animationFiles.Add(a.Key, anmFile);
@@ -1046,7 +1046,7 @@ namespace LOLViewer
         }
         
         private bool CreateTexture(FileInfo f, TextureTarget target,
-            GLTexture.SupportedImageEncodings encoding, EventLogger logger)
+            GLTexture.SupportedImageEncodings encoding, TraceLogger logger)
         {
             bool result = true;
 
@@ -1070,7 +1070,7 @@ namespace LOLViewer
         }
 
         private bool CreateTexture(RAFlibPlus.RAFFileListEntry f, TextureTarget target,
-            GLTexture.SupportedImageEncodings encoding, EventLogger logger)
+            GLTexture.SupportedImageEncodings encoding, TraceLogger logger)
         {
             bool result = true;
 

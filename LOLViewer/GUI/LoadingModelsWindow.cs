@@ -48,7 +48,7 @@ namespace LOLViewer
     {
         public DialogResult result;
         public LOLDirectoryReader reader;
-        public EventLogger logger;
+        public TraceLogger logger;
 
         public LoadingModelsWindow()
         {

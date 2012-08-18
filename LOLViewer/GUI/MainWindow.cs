@@ -68,7 +68,7 @@ namespace LOLViewer
 
         // IO Variables
         private LOLDirectoryReader reader;
-        private EventLogger logger;
+        private TraceLogger logger;
 
         // Model Name Search Variables
         public String lastSearch;
@@ -83,7 +83,7 @@ namespace LOLViewer
        
         public MainWindow()
         {
-            logger = new EventLogger();
+            logger = new TraceLogger();
             bool result = logger.Open(DEFAULT_LOG_FILE); // Not checking result.
             logger.LogEvent("Program Start.");
 

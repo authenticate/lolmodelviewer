@@ -39,17 +39,24 @@ using System.Text;
 
 using System.IO;
 
+using LOLFileReader.Diagnostics;
+
 using RAFlibPlus;
 
 namespace LOLFileReader
 {
     public class ANMListReader
     {
-        public static bool ReadAnimationList(int skin, RAFFileListEntry file,
-            ref Dictionary<String, String> animations, EventLogger logger)
+        public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations)
+        {
+            return Read(skin, file, ref animations, false);
+        }
+
+        public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations, bool enableLogging)
         {
             bool result = true;
 
+            TraceLogger logger = new TraceLogger(enableLogging);
             logger.LogEvent("Parsing animation list: " + file.FileName );
 
             try
@@ -74,7 +81,7 @@ namespace LOLFileReader
             return result;
         }
 
-        public static void ParseAnimations(int skin, StreamReader f,
+        private static void ParseAnimations(int skin, StreamReader f,
             ref Dictionary<String, String> animations)
         {
             while (f.EndOfStream == false)
@@ -125,7 +132,7 @@ namespace LOLFileReader
             }
         }
 
-        public static void ParseSkinSpecificAnimations(int modelSkin, int animationSkin, ref StreamReader f,
+        private static void ParseSkinSpecificAnimations(int modelSkin, int animationSkin, ref StreamReader f,
             ref Dictionary<String, String> animations)
         {
             // We need to read or skip over these animations.
@@ -172,7 +179,7 @@ namespace LOLFileReader
             }
         }
 
-        public static void ParseAnimation(bool replace, String animation, String file,
+        private static void ParseAnimation(bool replace, String animation, String file,
             ref Dictionary<String, String> animations)
         {
             // Letter case does not correlate between animation.list files and the .anm file.

@@ -38,6 +38,8 @@ using OpenTK.Graphics.OpenGL;
 
 using LOLFileReader;
 
+using LOLViewer.IO;
+
 namespace LOLViewer
 {
     class GLRiggedModel
@@ -85,7 +87,7 @@ namespace LOLViewer
         /// <param name="skn">The .skn data.</param>
         /// <param name="skl">The .skl data.</param>
         /// <returns></returns>
-        public bool Create(SKNFile skn, SKLFile skl, EventLogger logger)
+        public bool Create(SKNFile skn, SKLFile skl, TraceLogger logger)
         {
             bool result = true;
 
@@ -247,7 +249,7 @@ namespace LOLViewer
         private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
             List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights, List<uint> indices,
             List<Quaternion> boneOrientations, List<Vector3> bonePositions, List<float> boneScales,
-            List<String> boneNames, List<int> boneParents , List<uint> boneIDs, EventLogger logger)
+            List<String> boneNames, List<int> boneParents, List<uint> boneIDs, TraceLogger logger)
         {
             // Depending on the version of the model, the look ups change.
             if (version == 2 || version == 0)
@@ -277,7 +279,7 @@ namespace LOLViewer
         private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
             List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights, 
             List<uint> indices, List<Quaternion> boneOrientations, List<Vector3> bonePositions,
-            List<float> boneScales, List<String> boneNames, List<int> boneParents, EventLogger logger)
+            List<float> boneScales, List<String> boneNames, List<int> boneParents, TraceLogger logger)
         {
             bool result = true;
 

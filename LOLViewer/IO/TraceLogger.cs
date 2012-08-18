@@ -1,6 +1,4 @@
 ﻿
-
-
 /*
 LOLViewer
 Copyright 2011-2012 James Lammlein 
@@ -25,11 +23,9 @@ along with LOLViewer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-
 //
-// Logs events.
+// This class logs events.  It forwards trace messages to a file.
 //
-
 
 
 using System;
@@ -38,22 +34,31 @@ using System.Linq;
 using System.Text;
 
 using System.IO;
+using System.Diagnostics;
 
-namespace LOLFileReader
+namespace LOLViewer.IO
 {
-    public class EventLogger
+    public class TraceLogger
     {
-        private TextWriter file;
+        TextWriterTraceListener writer;
 
-        public EventLogger() {}
+        public TraceLogger()
+        {
+            Trace.Listeners.Clear();
+            Trace.AutoFlush = true;
+        }
 
-        public bool Open( string fileName )
+        public bool Open(String fileName)
         {
             bool result = true;
 
             try
             {
-                file = new StreamWriter(fileName);
+                writer = new TextWriterTraceListener(fileName);
+                writer.Name = "LOLViewer Logger";
+                writer.TraceOutputOptions = TraceOptions.ThreadId | TraceOptions.DateTime;
+
+                Trace.Listeners.Add(writer);
             }
             catch
             {
@@ -65,34 +70,25 @@ namespace LOLFileReader
 
         public void Close()
         {
-            if (file != null)
+            if (writer != null)
             {
-                file.Close();
+                writer.Close();
             }
         }
 
         public void LogError(string error)
         {
-            if (file != null)
-            {
-                file.WriteLine("Error: " + error);
-            }
+            Trace.WriteLine("Error: " + error);
         }
 
         public void LogWarning(string warning)
         {
-            if (file != null)
-            {
-                file.WriteLine("Warning: " + warning);
-            }
+            Trace.WriteLine("Warning: " + warning);
         }
 
         public void LogEvent(string e)
         {
-            if (file != null)
-            {
-                file.WriteLine("Event: " + e);
-            }
+            Trace.WriteLine("Event: " + e);
         }
     }
 }

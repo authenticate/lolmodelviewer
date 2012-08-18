@@ -37,6 +37,8 @@ using System.Text;
 
 using System.IO;
 
+using LOLFileReader.Diagnostics;
+
 using RAFlibPlus;
 
 namespace LOLFileReader
@@ -49,10 +51,22 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref ANMFile data, EventLogger logger)
+        public static bool Read(RAFFileListEntry file, ref ANMFile data)
+        {
+            return Read(file, ref data, false);
+        }
+
+        /// <summary>
+        /// Read in binary .anm file from RAF.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="data">The contents of the file are stored in here.</param>
+        /// <returns></returns>
+        public static bool Read(RAFFileListEntry file, ref ANMFile data, bool enableLogging)
         {
             bool result = true;
 
+            TraceLogger logger = new TraceLogger(enableLogging);
             logger.LogEvent("Reading anm: " + file.FileName);
 
             try
@@ -77,7 +91,7 @@ namespace LOLFileReader
         // (Because nested Try/Catch looks nasty in one function block.)
         //
 
-        private static bool ReadBinary(MemoryStream input, ref ANMFile data, EventLogger logger)
+        private static bool ReadBinary(MemoryStream input, ref ANMFile data, TraceLogger logger)
         {
             bool result = true;
 
@@ -97,7 +111,7 @@ namespace LOLFileReader
             return result;
         }
 
-        private static bool ReadData(BinaryReader file, ref ANMFile data, EventLogger logger)
+        private static bool ReadData(BinaryReader file, ref ANMFile data, TraceLogger logger)
         {
             bool result = true;
 
