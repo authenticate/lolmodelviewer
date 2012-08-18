@@ -33,6 +33,7 @@ using System.Linq;
 using System.Text;
 
 using System.IO;
+
 using RAFlibPlus;
 
 namespace LOLFileReader
@@ -48,11 +49,11 @@ namespace LOLFileReader
             try
             {
                 // Get the data from the archive
-                MemoryStream myInput = new MemoryStream( file.GetContent() );
+                MemoryStream myInput = new MemoryStream(file.GetContent());
                 result = ReadBinary(myInput, ref data, logger);
                 myInput.Close();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogError("Unable to open memory stream: " + file.FileName);
                 logger.LogError(e.Message);
@@ -77,7 +78,7 @@ namespace LOLFileReader
                 result = ReadData(myFile, ref data, logger);
                 myFile.Close();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogError("Unable to open binary reader.");
                 logger.LogError(e.Message);
@@ -119,16 +120,18 @@ namespace LOLFileReader
                         bone.scale = file.ReadSingle();
 
                         // Read in transform matrix.
-                        float[] matrix = new float[SKLBone.ORIENTATION_SIZE];
+                        float[] orientation = new float[SKLBone.ORIENTATION_SIZE];
                         for (int j = 0; j < SKLBone.ORIENTATION_SIZE; ++j)
                         {
-                            bone.orientation[j] = file.ReadSingle();
+                            orientation[j] = file.ReadSingle();
                         }
 
+                        bone.orientation = orientation;
+
                         // Position from matrix.
-                        bone.position[0] = matrix[3];
-                        bone.position[1] = matrix[7];
-                        bone.position[2] = matrix[11];
+                        bone.position[0] = orientation[3];
+                        bone.position[1] = orientation[7];
+                        bone.position[2] = orientation[11];
 
                         data.bones.Add(bone);
                     }
@@ -149,7 +152,7 @@ namespace LOLFileReader
                     // Header
                     Int16 zero = file.ReadInt16(); // ?
 
-                    data.numBones = (uint) file.ReadInt16();
+                    data.numBones = (uint)file.ReadInt16();
 
                     data.numBoneIDs = file.ReadUInt32();
                     Int16 offsetToVertexData = file.ReadInt16(); // Should be 64.
@@ -174,36 +177,27 @@ namespace LOLFileReader
                         // For now, just go with it.
                         bone.scale = 0.1f;
 
-                        zero            = file.ReadInt16(); // ?
-                        bone.ID         = file.ReadInt16();
-                        bone.parentID   = file.ReadInt16();
-                        unknown         = file.ReadInt16(); // ?
+                        zero = file.ReadInt16(); // ?
+                        bone.ID = file.ReadInt16();
+                        bone.parentID = file.ReadInt16();
+                        unknown = file.ReadInt16(); // ?
 
                         int namehash = file.ReadInt32();
 
-                        float twoPointOne = file.ReadSingle(); // ?
+                        float twoPointOne = file.ReadSingle();
 
-                        bone.position[0] = file.ReadSingle(); // x
-                        bone.position[1] = file.ReadSingle(); // y
-                        bone.position[2] = file.ReadSingle(); // z
-
-                        // Store in orientation matrix.
-                        bone.orientation[3] = bone.position[0];
-                        bone.orientation[7] = bone.position[1];
-                        bone.orientation[11] = bone.position[2];
+                        bone.position[0] = file.ReadSingle();
+                        bone.position[1] = file.ReadSingle();
+                        bone.position[2] = file.ReadSingle();
 
                         float one = file.ReadSingle(); // ? Maybe scales for X, Y, and Z
                         one = file.ReadSingle();
                         one = file.ReadSingle();
 
-                        float[] quaternion = new float[4];
-                        quaternion[0] = file.ReadSingle();
-                        quaternion[1] = file.ReadSingle();
-                        quaternion[2] = file.ReadSingle();
-                        quaternion[3] = file.ReadSingle();
-
-                        // Convert quaternion to rotation matrix.
-                        QuaternionToMatrix(ref bone.orientation, quaternion);
+                        bone.orientation[0] = file.ReadSingle();
+                        bone.orientation[1] = file.ReadSingle();
+                        bone.orientation[2] = file.ReadSingle();
+                        bone.orientation[3] = file.ReadSingle();
 
                         float ctx = file.ReadSingle(); // ctx
                         float cty = file.ReadSingle(); // cty
@@ -235,14 +229,14 @@ namespace LOLFileReader
                     for (int i = 0; i < data.numBones; ++i)
                     {
                         // bone names
-                        string name = ""; 
-                        while( name.Contains( '\0' ) == false )
+                        string name = "";
+                        while (name.Contains('\0') == false)
                         {
                             name += new string(file.ReadChars(4));
                         }
                         name = RemoveBoneNamePadding(name);
                         name = name.ToLower();
-                        
+
                         data.bones[i].name = name;
                     }
                 }
@@ -253,7 +247,7 @@ namespace LOLFileReader
                     result = false;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogError("Skl reading error.");
                 logger.LogError(e.Message);
@@ -283,45 +277,6 @@ namespace LOLFileReader
             }
 
             return s;
-        }
-
-        //
-        // Added this function when the reference to OpenTK was removed from the IO classes.
-        //
-
-        /// <summary>
-        /// Converts a quaternion to a matrix.
-        /// </summary>
-        /// <param name="result">The resultant matrix.  Expects a float[16].</param>
-        /// <param name="quaternion">The source quaternion.  Expects a float[4].</param>
-        private static void QuaternionToMatrix(ref float[] result, float[] quaternion)
-        {
-			float X = quaternion[0];
-			float Y = quaternion[1];
-			float Z = quaternion[2];
-			float W = quaternion[3];
-			
-			float xx = X * X;
-			float xy = X * Y;
-			float xz = X * Z;
-			float xw = X * W;
-			float yy = Y * Y;
-			float yz = Y * Z;
-			float yw = Y * W;
-			float zz = Z * Z;
-			float zw = Z * W;
-            
-            result[0] = 1 - 2 * (yy + zz);
-            result[1] = 2 * (xy - zw);
-            result[2] = 2 * (xz + yw);
-
-            result[4] = 2 * (xy + zw);
-            result[5] = 1 - 2 * (xx + zz);
-            result[6] = 2 * (yz - xw);
-
-            result[8] = 2 * (xz - yw);
-            result[9] = 2 * (yz + xw);
-            result[10] = 1 - 2 * (xx + yy);
         }
     }
 }
