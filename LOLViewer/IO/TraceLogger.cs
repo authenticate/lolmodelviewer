@@ -45,7 +45,6 @@ namespace LOLViewer.IO
         public TraceLogger()
         {
             Trace.Listeners.Clear();
-            Trace.AutoFlush = true;
         }
 
         public bool Open(String fileName)
@@ -79,6 +78,7 @@ namespace LOLViewer.IO
         public void LogError(string error)
         {
             Trace.WriteLine("Error: " + error);
+            Trace.Flush();
         }
 
         public void LogWarning(string warning)
