@@ -380,6 +380,119 @@ namespace LOLViewer.IO
             return result;
         }
 
+
+        // Single recursive function to replace the double
+        // It still assumes a certain LoL directory, but it has a little more flexibility than a straight path
+        // It should be only a bit slower than a stright path since it's a selective recurse, not a complete
+        private bool GetRAFFiles(DirectoryInfo dir, TraceLogger logger)
+        {
+            if (dir.Name.ToLower() == "league of legends")
+            {
+                foreach (DirectoryInfo dInfo in dir.GetDirectories())
+                {
+                    GetRAFFiles(dInfo, logger);
+                }
+            }
+            else if (dir.Name.ToLower() == "rads")
+            {
+                foreach (DirectoryInfo dInfo in dir.GetDirectories())
+                {
+                    GetRAFFiles(dInfo, logger);
+                }
+            }
+            else if (dir.Name.ToLower() == "projects")
+            {
+                foreach (DirectoryInfo dInfo in dir.GetDirectories())
+                {
+                    GetRAFFiles(dInfo, logger);
+                }
+            }
+            else if (dir.Name.ToLower() == "lol_game_client")
+            {
+                foreach (DirectoryInfo dInfo in dir.GetDirectories())
+                {
+                    GetRAFFiles(dInfo, logger);
+                }
+            }
+            else if (dir.Name.ToLower() == "filearchives")
+            {
+                return ReadRAFs(dir, logger);
+            }
+            
+            // Directory we don't care about. Return
+            return false;
+        }
+
+        // Replacement for individual raf reading and individual filetype searching
+        // Provide the directory of RADS\projects\lol_game_client\filearchives or the equivalent
+        private bool ReadRAFs(DirectoryInfo dir, TraceLogger logger)
+        {
+            try
+            {
+                RAFMasterFileList rafFiles = new RAFMasterFileList(dir.FullName);
+                logger.LogEvent("Found RAF files");
+
+                foreach (RAFMasterFileList.RAFSearchResult result in rafFiles.SearchFileEntries(new string[] { ".dds", ".skn", ".skl", ".inibin", "animations.list", ".anm" }, RAFMasterFileList.RAFSearchType.All))
+                {
+                    RAFFileListEntry e = result.value;
+
+                    switch (result.searchPhrase)
+                    {
+                        case ".dds":
+                            // Try to parse out unwanted textures.
+                            if (!e.FileName.ToLower().Contains("loadscreen") &&
+                                !e.FileName.ToLower().Contains("circle") &&
+                                !e.FileName.ToLower().Contains("square") &&
+                                e.FileName.ToLower().Contains("data") &&
+                                e.FileName.ToLower().Contains("characters"))
+                            {
+                                // Split off the actual file name from the full path
+                                String name = e.FileName.Substring(e.FileName.LastIndexOf('/') + 1).ToLower();
+                                // Check that the file isn't already in the dictionary
+                                if (!textures.ContainsKey(name))
+                                {
+                                    logger.LogEvent("Adding texture " + name + ": " + e.FileName);
+                                    textures.Add(name, e);
+                                }
+                                else
+                                {
+                                    logger.LogWarning("Duplicate texture " + name + ": " + e.FileName);
+                                }
+                            }
+                            break;
+
+                        case ".skn":
+
+                            break;
+
+                        case ".skl":
+
+                            break;
+
+                        case ".inibin":
+
+                            break;
+
+                        case "animations.list":
+
+                            break;
+
+                        case ".anm":
+
+                            break;
+                    }
+                }
+
+            }
+            catch (Exception e)
+            {
+                // Something went wrong. Most likely the RAF read failed due to a bad directory.
+                return false;
+            }
+
+            return true;
+        }
+
         //
         // Helper functions for reading the directory structure.
         //
