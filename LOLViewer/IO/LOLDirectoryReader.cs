@@ -181,14 +181,9 @@ namespace LOLViewer.IO
         {
             LOLModel result = null;
 
-            foreach (var m in models)
+            if (models.ContainsKey(name) == true)
             {
-                if (m.Key == name)
-                {
-                    // This is the model we want.
-                    result = m.Value;
-                    break;
-                }
+                result = models[name];
             }
 
             return result;
