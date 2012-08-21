@@ -340,6 +340,12 @@ namespace LOLViewer.IO
                             break;
 
                         case ".anm":
+                            name = e.FileName;
+                            int pos = name.LastIndexOf("/");
+                            name = name.Substring(pos + 1);
+                            name = name.Remove(name.Length - 4);
+                            name = name.ToLower();
+
                             if (!animations.ContainsKey(name))
                             {
                                 logger.LogEvent("Adding anm " + name + ": " + e.FileName);
