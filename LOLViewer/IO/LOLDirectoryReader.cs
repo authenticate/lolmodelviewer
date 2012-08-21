@@ -66,6 +66,9 @@ namespace LOLViewer.IO
 
         public Dictionary<String, LOLModel> models;
 
+        Stopwatch findRAFs = new Stopwatch();
+        Stopwatch processRAFs = new Stopwatch();
+
         public LOLDirectoryReader()
         {
             root = DEFAULT_ROOT;
@@ -119,6 +122,9 @@ namespace LOLViewer.IO
                 return false;
             }
 
+            // It's not really neccessary to check if the directory is correct because GetRAFFiles will barf (quietly) if anything is wrong
+            // As such I have the directory guard commented out. Can delete or uncomment later.
+
             //
             // Directory Guard.
             // Assume the user selected the wrong LOL installation directory.
@@ -134,53 +140,44 @@ namespace LOLViewer.IO
             // because someone could have a new Riot game installed which is not LOL.
             //
 
-            bool isRootSelected = false;
+            //bool isRootSelected = false;
 
-            // Deafult directory installations.
-            if (rootDir.Name.Contains("League of Legends") == true ||
-                rootDir.Name.Contains("Riot Games") == true ||
-                rootDir.Name.Contains("RADS") == true ||
-                rootDir.Name.Contains("rads") == true )
-            {
-                isRootSelected = true;
-            }
-            // Selected a renamed "Riot Games" directory.
-            else if (ContainsDirectory(rootDir, "League of Legends") == true)
-            {
-                isRootSelected = true;
-            }
-            // Selected a rename "League of Legends" directory.
-            else if (ContainsDirectory(rootDir, "RADS") == true || 
-                     ContainsDirectory(rootDir, "rads") == true )
-            {
-                isRootSelected = true;
-            }
+            //// Deafult directory installations.
+            //if (rootDir.Name.Contains("League of Legends") == true ||
+            //    rootDir.Name.Contains("Riot Games") == true ||
+            //    rootDir.Name.Contains("RADS") == true ||
+            //    rootDir.Name.Contains("rads") == true )
+            //{
+            //    isRootSelected = true;
+            //}
+            //// Selected a renamed "Riot Games" directory.
+            //else if (ContainsDirectory(rootDir, "League of Legends") == true)
+            //{
+            //    isRootSelected = true;
+            //}
+            //// Selected a rename "League of Legends" directory.
+            //else if (ContainsDirectory(rootDir, "RADS") == true || 
+            //         ContainsDirectory(rootDir, "rads") == true )
+            //{
+            //    isRootSelected = true;
+            //}
 
-            // If we didn't find the root, just bail.
-            if (isRootSelected == false)
-            {
-                logger.LogError(root + " is not a League of Legends root directory.");
-                return false;
-            }
+            //// If we didn't find the root, just bail.
+            //if (isRootSelected == false)
+            //{
+            //    logger.LogError(root + " is not a League of Legends root directory.");
+            //    return false;
+            //}
 
-            //
-            // Start from the root and try to read
-            // model files and textures.
-            //
-            try
-            {
-                DirectoryInfo di = new DirectoryInfo(root);
-                foreach (DirectoryInfo d in di.GetDirectories())
-                {
-                    result = ReadDirectory(d, logger);
-                }
-            }
-            catch(Exception e)
-            {
-                logger.LogError("Unable to open directory: " + root);
-                logger.LogError(e.Message);
-                result = false;
-            }
+            
+            // Try to find the raf files and read them
+            DirectoryInfo di = new DirectoryInfo(root);
+            findRAFs.Start();
+            result = GetRAFFiles(di, logger);
+            
+            // If the finding or reading fails, bail
+            if (!result)
+                return result;
 
             foreach( RAFFileListEntry f in inibins )
             {
@@ -248,6 +245,7 @@ namespace LOLViewer.IO
                 }
             }
 
+            processRAFs.Stop();
             return result;
         }
 
@@ -390,32 +388,39 @@ namespace LOLViewer.IO
             {
                 foreach (DirectoryInfo dInfo in dir.GetDirectories())
                 {
-                    GetRAFFiles(dInfo, logger);
+                    // If we have found the filearchives directory, just pass true all the way up the stack
+                    if (GetRAFFiles(dInfo, logger))
+                        return true;
                 }
             }
             else if (dir.Name.ToLower() == "rads")
             {
                 foreach (DirectoryInfo dInfo in dir.GetDirectories())
                 {
-                    GetRAFFiles(dInfo, logger);
+                    if (GetRAFFiles(dInfo, logger))
+                        return true;
                 }
             }
             else if (dir.Name.ToLower() == "projects")
             {
                 foreach (DirectoryInfo dInfo in dir.GetDirectories())
                 {
-                    GetRAFFiles(dInfo, logger);
+                    if (GetRAFFiles(dInfo, logger))
+                        return true;
                 }
             }
             else if (dir.Name.ToLower() == "lol_game_client")
             {
                 foreach (DirectoryInfo dInfo in dir.GetDirectories())
                 {
-                    GetRAFFiles(dInfo, logger);
+                    if (GetRAFFiles(dInfo, logger))
+                        return true;
                 }
             }
             else if (dir.Name.ToLower() == "filearchives")
             {
+                findRAFs.Stop();
+                processRAFs.Start();
                 return ReadRAFs(dir, logger);
             }
             
@@ -436,6 +441,9 @@ namespace LOLViewer.IO
                 {
                     RAFFileListEntry e = result.value;
 
+                    // Split off the actual file name from the full path
+                    String name = e.FileName.Substring(e.FileName.LastIndexOf('/') + 1).ToLower();
+
                     switch (result.searchPhrase)
                     {
                         case ".dds":
@@ -446,8 +454,6 @@ namespace LOLViewer.IO
                                 e.FileName.ToLower().Contains("data") &&
                                 e.FileName.ToLower().Contains("characters"))
                             {
-                                // Split off the actual file name from the full path
-                                String name = e.FileName.Substring(e.FileName.LastIndexOf('/') + 1).ToLower();
                                 // Check that the file isn't already in the dictionary
                                 if (!textures.ContainsKey(name))
                                 {
@@ -462,23 +468,72 @@ namespace LOLViewer.IO
                             break;
 
                         case ".skn":
-
+                            if (!skns.ContainsKey(name))
+                            {
+                                logger.LogEvent("Adding skn " + name + ": " + e.FileName);
+                                skns.Add(name, e);
+                            }
+                            else
+                            {
+                                logger.LogWarning("Duplicate skn " + name + ": " + e.FileName);
+                            }
                             break;
 
                         case ".skl":
-
+                            if (!skls.ContainsKey(name))
+                            {
+                                logger.LogEvent("Adding skn " + name + ": " + e.FileName);
+                                skls.Add(name, e);
+                            }
+                            else
+                            {
+                                logger.LogWarning("Duplicate skn " + name + ": " + e.FileName);
+                            }
                             break;
 
                         case ".inibin":
-
+                            // Try to only read champion inibins
+                            if (e.FileName.ToLower().Contains("data") &&
+                                e.FileName.ToLower().Contains("characters"))
+                            {
+                                logger.LogEvent("Adding inibin " + name + ": " + e.FileName);
+                                inibins.Add(e);
+                            }
+                            else
+                            {
+                                logger.LogWarning("Excluding inibin " + name + ": " + e.FileName);
+                            }
                             break;
 
                         case "animations.list":
+                            // Remove the file name.
+                            name = e.FileName.Remove(e.FileName.LastIndexOf('/'));
 
+                            // Remove proceeding directories to get the parent directory
+                            name = name.Substring(name.LastIndexOf('/') + 1).ToLower();
+
+                            // Name is the parent directory.
+                            if (!animationLists.ContainsKey(name))
+                            {
+                                logger.LogEvent("Adding animation list " + name + ": " + e.FileName);
+                                animationLists.Add(name, e);
+                            }
+                            else
+                            {
+                                logger.LogWarning("Duplicate animation list " + name + ": " + e.FileName);
+                            }
                             break;
 
                         case ".anm":
-
+                            if (!animations.ContainsKey(name))
+                            {
+                                logger.LogEvent("Adding anm " + name + ": " + e.FileName);
+                                animations.Add(name, e);
+                            }
+                            else
+                            {
+                                logger.LogWarning("Duplicate anm " + name + ": " + e.FileName);
+                            }
                             break;
                     }
                 }
@@ -487,15 +542,16 @@ namespace LOLViewer.IO
             catch (Exception e)
             {
                 // Something went wrong. Most likely the RAF read failed due to a bad directory.
+                logger.LogError("Failed to open RAFs");
+                logger.LogError(e.Message);
                 return false;
             }
 
             return true;
         }
 
-        //
-        // Helper functions for reading the directory structure.
-        //
+
+        #region Functions no longer being used. Keeping until second opinion of changes
 
         private bool ReadDirectory(DirectoryInfo dir, TraceLogger logger)
         {
@@ -821,6 +877,9 @@ namespace LOLViewer.IO
 
             return result;
         }
+
+        #endregion // Functions no longer being used
+
 
         //
         // Helper Functions
