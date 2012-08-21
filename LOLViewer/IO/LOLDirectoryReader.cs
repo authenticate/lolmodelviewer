@@ -340,11 +340,8 @@ namespace LOLViewer.IO
                             break;
 
                         case ".anm":
-                            name = e.FileName;
-                            int pos = name.LastIndexOf("/");
-                            name = name.Substring(pos + 1);
-                            name = name.Remove(name.Length - 4);
-                            name = name.ToLower();
+                            // Remove the .anm extension.
+                            name = name.Remove(name.Length - 4).ToLower();
 
                             if (!animations.ContainsKey(name))
                             {
