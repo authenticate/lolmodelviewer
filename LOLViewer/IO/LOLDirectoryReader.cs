@@ -341,7 +341,7 @@ namespace LOLViewer.IO
 
                         case ".anm":
                             // Remove the .anm extension.
-                            name = name.Remove(name.Length - 4).ToLower();
+                            name = name.Remove(name.Length - 4);
 
                             if (!animations.ContainsKey(name))
                             {
