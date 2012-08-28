@@ -46,6 +46,8 @@ using LOLFileReader;
 using LOLViewer.IO;
 using LOLViewer.Graphics;
 
+using CSharpLogger;
+
 namespace LOLViewer.GUI
 {
     public partial class MainWindow : Form
@@ -68,7 +70,7 @@ namespace LOLViewer.GUI
 
         // IO Variables
         private LOLDirectoryReader reader;
-        private TraceLogger logger;
+        private Logger logger;
 
         // Model Name Search Variables
         public String lastSearch;
@@ -83,9 +85,8 @@ namespace LOLViewer.GUI
        
         public MainWindow()
         {
-            logger = new TraceLogger();
-            bool result = logger.Open(DEFAULT_LOG_FILE); // Not checking result.
-            logger.LogEvent("Program Start.");
+            logger = new Logger(DEFAULT_LOG_FILE); // Not checking result.
+            logger.Event("Program Start.");
 
             isGLLoaded = false;
             timer = new Stopwatch();
@@ -111,12 +112,12 @@ namespace LOLViewer.GUI
                     }
                     else
                     {
-                        logger.LogWarning("Failed to locate " + DEFAULT_DIRECTORY_FILE + ".");
+                        logger.Warning("Failed to locate " + DEFAULT_DIRECTORY_FILE + ".");
                     }
                 }
                 catch 
                 {
-                    logger.LogWarning("Failed to open " + DEFAULT_DIRECTORY_FILE + ".");
+                    logger.Warning("Failed to open " + DEFAULT_DIRECTORY_FILE + ".");
                 }
 
                 if (isFileOpen == true)
@@ -126,7 +127,7 @@ namespace LOLViewer.GUI
                     {
                         try
                         {
-                            logger.LogEvent("Reading " + DEFAULT_DIRECTORY_FILE + ".");
+                            logger.Event("Reading " + DEFAULT_DIRECTORY_FILE + ".");
 
                             fileReader = new BinaryReader(file);
                             reader.root = fileReader.ReadString();
@@ -134,7 +135,7 @@ namespace LOLViewer.GUI
                         }
                         catch
                         {
-                            logger.LogWarning("Failed to read " + DEFAULT_DIRECTORY_FILE + ".");
+                            logger.Warning("Failed to read " + DEFAULT_DIRECTORY_FILE + ".");
                             file.Close();
                         }
                     }
@@ -305,7 +306,7 @@ namespace LOLViewer.GUI
             renderer.ShutDown();
 
             // Close logger at this point.
-            logger.LogEvent("Program shutdown.");
+            logger.Event("Program shutdown.");
             logger.Close();
         }
 
@@ -424,16 +425,16 @@ namespace LOLViewer.GUI
             }
 
             // On successful read, write the root directory to file.
-            logger.LogEvent("Storing League of Legends installation directory path.");
+            logger.Event("Storing League of Legends installation directory path.");
             FileStream file = null;
             try
             {
-                logger.LogEvent("Opening " + DEFAULT_DIRECTORY_FILE + ".");
+                logger.Event("Opening " + DEFAULT_DIRECTORY_FILE + ".");
                 file = new FileStream(DEFAULT_DIRECTORY_FILE, FileMode.OpenOrCreate);
             }
             catch
             {
-                logger.LogWarning("Failed to open " + DEFAULT_DIRECTORY_FILE + ".");
+                logger.Warning("Failed to open " + DEFAULT_DIRECTORY_FILE + ".");
             }
 
             BinaryWriter writer = null;
@@ -441,14 +442,14 @@ namespace LOLViewer.GUI
             {
                 try
                 {
-                    logger.LogEvent("Writing League of Legends directory path.");
+                    logger.Event("Writing League of Legends directory path.");
                     writer = new BinaryWriter(file);
                     writer.Write(reader.root);
                     writer.Close();
                 }
                 catch
                 {
-                    logger.LogWarning("Failed to write League of Legends directory path.");
+                    logger.Warning("Failed to write League of Legends directory path.");
                     file.Close();
                 }
             }

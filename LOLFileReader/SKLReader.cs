@@ -1,6 +1,4 @@
-﻿
-
-/*
+﻿/*
 LOLViewer
 Copyright 2011-2012 James Lammlein 
 
@@ -24,7 +22,7 @@ along with LOLViewer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 //
-// Abrstraction to read .skl files.
+// Abstraction to read .skl files.
 //
 
 using System;
@@ -34,7 +32,7 @@ using System.Text;
 
 using System.IO;
 
-using LOLFileReader.Diagnostics;
+using CSharpLogger;
 
 using RAFlibPlus;
 
@@ -42,17 +40,16 @@ namespace LOLFileReader
 {
     public class SKLReader
     {
-        public static bool Read(RAFFileListEntry file, ref SKLFile data)
-        {
-            return Read(file, ref data, false);
-        }
+        //public static bool Read(RAFFileListEntry file, ref SKLFile data)
+        //{
+        //    return Read(file, ref data, );
+        //}
 
-        public static bool Read(RAFFileListEntry file, ref SKLFile data, bool enableLogging)
+        public static bool Read(RAFFileListEntry file, ref SKLFile data, Logger logger)
         {
             bool result = true;
 
-            TraceLogger logger = new TraceLogger(enableLogging);
-            logger.LogEvent("Reading skl: " + file.FileName);
+            logger.Event("Reading skl: " + file.FileName);
 
             try
             {
@@ -63,20 +60,20 @@ namespace LOLFileReader
             }
             catch (Exception e)
             {
-                logger.LogError("Unable to open memory stream: " + file.FileName);
-                logger.LogError(e.Message);
+                logger.Error("Unable to open memory stream: " + file.FileName);
+                logger.Error(e.Message);
                 result = false;
             }
 
             return result;
         }
 
-        //
-        // Helper Functions. 
-        // (Because nested Try/Catch looks nasty in one function block.)
-        //
+        
+         //Helper Functions. 
+         //(Because nested Try/Catch looks nasty in one function block.)
+        
 
-        private static bool ReadBinary(MemoryStream input, ref SKLFile data, TraceLogger logger)
+        private static bool ReadBinary(MemoryStream input, ref SKLFile data, Logger logger)
         {
             bool result = true;
 
@@ -88,15 +85,15 @@ namespace LOLFileReader
             }
             catch (Exception e)
             {
-                logger.LogError("Unable to open binary reader.");
-                logger.LogError(e.Message);
+                logger.Error("Unable to open binary reader.");
+                logger.Error(e.Message);
                 result = false;
             }
 
             return result;
         }
 
-        private static bool ReadData(BinaryReader file, ref SKLFile data, TraceLogger logger)
+        private static bool ReadData(BinaryReader file, ref SKLFile data, Logger logger)
         {
             bool result = true;
 
@@ -251,23 +248,23 @@ namespace LOLFileReader
                 // Unknown Version
                 else
                 {
-                    logger.LogError("Unknown skl version: " + data.version);
+                    logger.Error("Unknown skl version: " + data.version);
                     result = false;
                 }
             }
             catch (Exception e)
             {
-                logger.LogError("Skl reading error.");
-                logger.LogError(e.Message);
+                logger.Error("Skl reading error.");
+                logger.Error(e.Message);
                 result = false;
             }
 
-            logger.LogEvent("Magic One: " + data.magicOne);
-            logger.LogEvent("Magic Two: " + data.magicTwo);
-            logger.LogEvent("Version: " + data.version);
-            logger.LogEvent("Designer ID: " + data.designerID);
-            logger.LogEvent("Number of Bones: " + data.numBones);
-            logger.LogEvent("Number of Bone IDs: " + data.numBoneIDs);
+            logger.Event("Magic One: " + data.magicOne);
+            logger.Event("Magic Two: " + data.magicTwo);
+            logger.Event("Version: " + data.version);
+            logger.Event("Designer ID: " + data.designerID);
+            logger.Event("Number of Bones: " + data.numBones);
+            logger.Event("Number of Bone IDs: " + data.numBoneIDs);
 
             return result;
         }

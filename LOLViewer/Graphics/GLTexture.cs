@@ -42,6 +42,8 @@ using OpenTK.Graphics.OpenGL;
 
 using LOLFileReader;
 
+using CSharpLogger;
+
 namespace LOLViewer.Graphics
 {
     class GLTexture
@@ -70,7 +72,7 @@ namespace LOLViewer.Graphics
         /// <param name="file">The RAF file entry of the texture.</param>
         /// <param name="target">Only supports 2D.</param>
         /// <returns></returns>
-        public bool Create(RAFFileListEntry file, TextureTarget target, SupportedImageEncodings encoding)
+        public bool Create(RAFFileListEntry file, TextureTarget target, SupportedImageEncodings encoding, Logger logger)
         {
             bool result = true;
 
@@ -90,7 +92,7 @@ namespace LOLViewer.Graphics
             if (encoding == SupportedImageEncodings.DDS)
             {
                 // Special case.
-                result = DDSReader.Read(file, ref bitmap, true);
+                result = DDSReader.Read(file, ref bitmap, logger);
             }
             else
             {

@@ -41,6 +41,8 @@ using OpenTK.Graphics.OpenGL;
 
 using LOLFileReader;
 
+using CSharpLogger;
+
 namespace LOLViewer.Graphics
 {
     public class GLRenderer
@@ -89,7 +91,7 @@ namespace LOLViewer.Graphics
             }
         }
 
-        public bool OnLoad(TraceLogger logger)
+        public bool OnLoad(Logger logger)
         {
             bool result = true;
 
@@ -362,7 +364,7 @@ namespace LOLViewer.Graphics
             GL.ClearColor(clearColor);
         }
 
-        public bool LoadModel(LOLModel model, TraceLogger logger)
+        public bool LoadModel(LOLModel model, Logger logger)
         {
             bool result = true;
 
@@ -735,11 +737,11 @@ namespace LOLViewer.Graphics
         // TODO: Alot of this code is a mess.
         // It should be refactored into more meaningful sub classes.
 
-        private bool CreateShaderFromMemory(String name, String data, ShaderType type, TraceLogger logger)
+        private bool CreateShaderFromMemory(String name, String data, ShaderType type, Logger logger)
         {
             bool result = true;
 
-            logger.LogEvent("Creating shader: " + name);
+            logger.Event("Creating shader: " + name);
 
             GLShader shader = new GLShader(type);
             result = shader.LoadFromMemory(data);
@@ -755,7 +757,7 @@ namespace LOLViewer.Graphics
             }
             else
             {
-                logger.LogError("Failed to create shader: " + name);
+                logger.Error("Failed to create shader: " + name);
                 // We need to clean up this shader since it failed.
                 shader.Destroy();
             }
@@ -764,11 +766,11 @@ namespace LOLViewer.Graphics
         }
 
         private bool CreateProgram(String progName, String vertName, String fragName,
-            List<String> attributes, List<String> uniforms, TraceLogger logger) 
+            List<String> attributes, List<String> uniforms, Logger logger) 
         {
             bool result = true;
 
-            logger.LogEvent("Creating shader program: " + progName);
+            logger.Event("Creating shader program: " + progName);
 
             GLShaderProgram program = new GLShaderProgram();
             if (result == true)
@@ -851,7 +853,7 @@ namespace LOLViewer.Graphics
             }
             else
             {
-                logger.LogError("Failed to create shader program: " + progName);
+                logger.Error("Failed to create shader program: " + progName);
                 program.Destroy();
             }
 
@@ -859,11 +861,11 @@ namespace LOLViewer.Graphics
         }
 
         private bool CreateBillboard( String name, List<float> vertexData,
-            List<float> texData, List<uint> indexData, TraceLogger logger)
+            List<float> texData, List<uint> indexData, Logger logger)
         {
             bool result = true;
 
-            logger.LogEvent("Creating billboard: " + name);
+            logger.Event("Creating billboard: " + name);
 
             GLBillboard billboard = new GLBillboard();
             result = billboard.Create(vertexData, texData, indexData);
@@ -875,24 +877,24 @@ namespace LOLViewer.Graphics
             }
             else
             {
-                logger.LogError("Failed to create billboard: " + name);
+                logger.Error("Failed to create billboard: " + name);
                 billboard.Destory();
             }
 
             return result;
         }
 
-        private bool CreateStaticModel(LOLModel model, TraceLogger logger)
+        private bool CreateStaticModel(LOLModel model, Logger logger)
         {
             bool result = true;
 
-            logger.LogEvent("Creating static model.");
+            logger.Event("Creating static model.");
 
             SKNFile file = new SKNFile();
             if (result == true)
             {
                 // Model is stored in a RAF.
-                result = SKNReader.Read(model.skn, ref file, true);             
+                result = SKNReader.Read(model.skn, ref file, logger);             
             }
 
             GLStaticModel glModel = new GLStaticModel();
@@ -934,29 +936,29 @@ namespace LOLViewer.Graphics
 
             if (result == false)
             {
-                logger.LogError("Failed to create static model.");
+                logger.Error("Failed to create static model.");
             }
 
             return result;
         }
 
-        private bool CreateRiggedModel(LOLModel model, TraceLogger logger)
+        private bool CreateRiggedModel(LOLModel model, Logger logger)
         {
             bool result = true;
 
-            logger.LogEvent("Creating rigged model.");
+            logger.Event("Creating rigged model.");
 
             SKNFile sknFile = new SKNFile();
             if (result == true)
             {
                 // Model is stored in a RAF.
-                result = SKNReader.Read(model.skn, ref sknFile, true);
+                result = SKNReader.Read(model.skn, ref sknFile, logger);
             }
 
             SKLFile sklFile = new SKLFile();
             if (result == true)
             {
-                result = SKLReader.Read(model.skl, ref sklFile, true);
+                result = SKLReader.Read(model.skl, ref sklFile, logger);
             }
 
             GLRiggedModel glModel = new GLRiggedModel();
@@ -1014,7 +1016,7 @@ namespace LOLViewer.Graphics
                 foreach (var a in model.animations)
                 {
                     ANMFile anmFile = new ANMFile();
-                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, true);
+                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, logger);
                     if (anmResult == true)
                     {
                         animationFiles.Add(a.Key, anmFile);
@@ -1039,21 +1041,21 @@ namespace LOLViewer.Graphics
 
             if (result == false)
             {
-                logger.LogError("Failed to create rigged model.");
+                logger.Error("Failed to create rigged model.");
             }
 
             return result;
         }
 
         private bool CreateTexture(RAFlibPlus.RAFFileListEntry f, TextureTarget target,
-            GLTexture.SupportedImageEncodings encoding, TraceLogger logger)
+            GLTexture.SupportedImageEncodings encoding, Logger logger)
         {
             bool result = true;
 
-            logger.LogEvent("Creating texture: " + f.FileName);
+            logger.Event("Creating texture: " + f.FileName);
 
             GLTexture texture = new GLTexture();
-            result = texture.Create(f, target, encoding);
+            result = texture.Create(f, target, encoding, logger);
 
             // Store new texture.
             if (result == true)
@@ -1066,7 +1068,7 @@ namespace LOLViewer.Graphics
             }
             else
             {
-                logger.LogError("Failed to create texture: " + f.FileName);
+                logger.Error("Failed to create texture: " + f.FileName);
                 texture.Destroy();
             }
 

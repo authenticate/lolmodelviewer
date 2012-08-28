@@ -39,7 +39,7 @@ using System.Text;
 
 using System.IO;
 
-using LOLFileReader.Diagnostics;
+using CSharpLogger;
 
 using RAFlibPlus;
 
@@ -47,17 +47,16 @@ namespace LOLFileReader
 {
     public class ANMListReader
     {
-        public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations)
-        {
-            return Read(skin, file, ref animations, false);
-        }
+        //public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations)
+        //{
+        //    return Read(skin, file, ref animations, false);
+        //}
 
-        public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations, bool enableLogging)
+        public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations, Logger logger)
         {
             bool result = true;
 
-            TraceLogger logger = new TraceLogger(enableLogging);
-            logger.LogEvent("Parsing animation list: " + file.FileName );
+            logger.Event("Parsing animation list: " + file.FileName );
 
             try
             {
@@ -72,7 +71,7 @@ namespace LOLFileReader
             }
             catch
             {
-                logger.LogError("Failed to parse animation list: " + file.FileName);
+                logger.Error("Failed to parse animation list: " + file.FileName);
 
                 result = false;
                 animations.Clear();

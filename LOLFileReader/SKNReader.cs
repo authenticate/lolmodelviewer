@@ -35,7 +35,7 @@ using System.Text;
 
 using System.IO;
 
-using LOLFileReader.Diagnostics;
+using CSharpLogger;
 
 using RAFlibPlus;
 
@@ -49,10 +49,10 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref SKNFile data)
-        {
-            return Read(file, ref data, false);
-        }
+        //public static bool Read(RAFFileListEntry file, ref SKNFile data)
+        //{
+        //    return Read(file, ref data, false);
+        //}
 
         /// <summary>
         /// Read in binary .skn file from RAF.
@@ -60,12 +60,11 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref SKNFile data, bool enableLogging)
+        public static bool Read(RAFFileListEntry file, ref SKNFile data, Logger logger)
         {
             bool result = true;
 
-            TraceLogger logger = new TraceLogger(enableLogging);
-            logger.LogEvent("Reading skn: " + file.FileName);
+            logger.Event("Reading skn: " + file.FileName);
 
             try
             {
@@ -76,8 +75,8 @@ namespace LOLFileReader
             }
             catch(Exception e)
             {
-                logger.LogError("Unable to open memory stream: " + file.FileName);
-                logger.LogError(e.Message);
+                logger.Error("Unable to open memory stream: " + file.FileName);
+                logger.Error(e.Message);
                 result = false;
             }
 
@@ -89,7 +88,7 @@ namespace LOLFileReader
         // (Because nested Try/Catch looks nasty in one function block.)
         //
 
-        private static bool ReadBinary(MemoryStream input, ref SKNFile data, TraceLogger logger)
+        private static bool ReadBinary(MemoryStream input, ref SKNFile data, Logger logger)
         {
             bool result = true;
 
@@ -101,15 +100,15 @@ namespace LOLFileReader
             }
             catch(Exception e)
             {
-                logger.LogError("Unable to open binary reader.");
-                logger.LogError(e.Message);
+                logger.Error("Unable to open binary reader.");
+                logger.Error(e.Message);
                 result = false;
             }
 
             return result;
         }
 
-        private static bool ReadData(BinaryReader file, ref SKNFile data, TraceLogger logger)
+        private static bool ReadData(BinaryReader file, ref SKNFile data, Logger logger)
         {
             bool result = true;
 
@@ -187,23 +186,23 @@ namespace LOLFileReader
                 // Unknown Version
                 else           
                 {
-                    logger.LogError("Unknown skn version: " + data.version);
+                    logger.Error("Unknown skn version: " + data.version);
                     result = false;
                 }
             }
             catch(Exception e)
             {
-                logger.LogError("Skn reading error.");
-                logger.LogError(e.Message);
+                logger.Error("Skn reading error.");
+                logger.Error(e.Message);
                 result = false;
             }
 
-            logger.LogEvent("Magic: " + data.magic);
-            logger.LogEvent("Version: " + data.version);
-            logger.LogEvent("Number of Objects: " + data.numObjects);
-            logger.LogEvent("Number of Material Headers: " + data.numMaterialHeaders);
-            logger.LogEvent("Number of Vertices: " + data.numVertices);
-            logger.LogEvent("Number of Indices: " + data.numIndices);
+            logger.Event("Magic: " + data.magic);
+            logger.Event("Version: " + data.version);
+            logger.Event("Number of Objects: " + data.numObjects);
+            logger.Event("Number of Material Headers: " + data.numMaterialHeaders);
+            logger.Event("Number of Vertices: " + data.numVertices);
+            logger.Event("Number of Indices: " + data.numIndices);
 
             return result;
         }

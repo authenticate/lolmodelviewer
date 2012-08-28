@@ -43,6 +43,8 @@ using LOLFileReader;
 
 using RAFlibPlus;
 
+using CSharpLogger;
+
 namespace LOLViewer.IO
 {
     public class LOLDirectoryReader
@@ -90,7 +92,7 @@ namespace LOLViewer.IO
             root = s;
         }
 
-        public bool Read(TraceLogger logger)
+        public bool Read(Logger logger)
         {
             bool result = true;
 
@@ -109,12 +111,12 @@ namespace LOLViewer.IO
             DirectoryInfo rootDir = null;
             try
             {
-                logger.LogEvent("Reading models from: " + root);
+                logger.Event("Reading models from: " + root);
                 rootDir = new DirectoryInfo(root);
             }
             catch 
             {
-                logger.LogError("Unable to get the directory information: " + root);
+                logger.Error("Unable to get the directory information: " + root);
                 result = false;
             }
 
@@ -131,13 +133,13 @@ namespace LOLViewer.IO
                     // If the finding or reading fails, bail.
                     if (!result)
                     {
-                        logger.LogError("Unable to find the 'filearchives' directory: " + root);
+                        logger.Error("Unable to find the 'filearchives' directory: " + root);
                     }
                 }
                 catch (Exception e)
                 {
-                    logger.LogError("Unable to open directory: " + root);
-                    logger.LogError(e.Message);
+                    logger.Error("Unable to open directory: " + root);
+                    logger.Error(e.Message);
                     result = false;
                 }
             }
@@ -194,7 +196,7 @@ namespace LOLViewer.IO
         // Single recursive function to replace the double
         // It still assumes a certain LoL directory, but it has a little more flexibility than a straight path
         // It should be only a bit slower than a stright path since it's a selective recurse, not a complete
-        private bool GetRAFFiles(DirectoryInfo dir, TraceLogger logger)
+        private bool GetRAFFiles(DirectoryInfo dir, Logger logger)
         {
             if (dir.Name.ToLower() == "league of legends")
             {
@@ -240,12 +242,12 @@ namespace LOLViewer.IO
 
         // Replacement for individual raf reading and individual filetype searching
         // Provide the directory of RADS\projects\lol_game_client\filearchives or the equivalent
-        private bool ReadRAFs(DirectoryInfo dir, TraceLogger logger)
+        private bool ReadRAFs(DirectoryInfo dir, Logger logger)
         {
             try
             {
                 RAFMasterFileList rafFiles = new RAFMasterFileList(dir.FullName);
-                logger.LogEvent("Opening the 'filearchives' directory: " + dir.FullName);
+                logger.Event("Opening the 'filearchives' directory: " + dir.FullName);
 
                 foreach (RAFMasterFileList.RAFSearchResult result in rafFiles.SearchFileEntries(new string[] { ".dds", ".skn", ".skl", ".inibin", "animations.list", ".anm" }, RAFMasterFileList.RAFSearchType.All))
                 {
@@ -267,12 +269,11 @@ namespace LOLViewer.IO
                                 // Check that the file isn't already in the dictionary
                                 if (!textures.ContainsKey(name))
                                 {
-                                    logger.LogEvent("Adding texture " + name + ": " + e.FileName);
                                     textures.Add(name, e);
                                 }
                                 else
                                 {
-                                    logger.LogWarning("Duplicate texture " + name + ": " + e.FileName);
+                                    logger.Warning("Duplicate texture " + name + ": " + e.FileName);
                                 }
                             }
                             break;
@@ -280,24 +281,22 @@ namespace LOLViewer.IO
                         case ".skn":
                             if (!skns.ContainsKey(name))
                             {
-                                logger.LogEvent("Adding skn " + name + ": " + e.FileName);
                                 skns.Add(name, e);
                             }
                             else
                             {
-                                logger.LogWarning("Duplicate skn " + name + ": " + e.FileName);
+                                logger.Warning("Duplicate skn " + name + ": " + e.FileName);
                             }
                             break;
 
                         case ".skl":
                             if (!skls.ContainsKey(name))
                             {
-                                logger.LogEvent("Adding skn " + name + ": " + e.FileName);
                                 skls.Add(name, e);
                             }
                             else
                             {
-                                logger.LogWarning("Duplicate skn " + name + ": " + e.FileName);
+                                logger.Warning("Duplicate skn " + name + ": " + e.FileName);
                             }
                             break;
 
@@ -306,12 +305,11 @@ namespace LOLViewer.IO
                             if (e.FileName.ToLower().Contains("data") &&
                                 e.FileName.ToLower().Contains("characters"))
                             {
-                                logger.LogEvent("Adding inibin " + name + ": " + e.FileName);
                                 inibins.Add(e);
                             }
                             else
                             {
-                                logger.LogWarning("Excluding inibin " + name + ": " + e.FileName);
+                                logger.Warning("Excluding inibin " + name + ": " + e.FileName);
                             }
                             break;
 
@@ -325,12 +323,11 @@ namespace LOLViewer.IO
                             // Name is the parent directory.
                             if (!animationLists.ContainsKey(name))
                             {
-                                logger.LogEvent("Adding animation list " + name + ": " + e.FileName);
                                 animationLists.Add(name, e);
                             }
                             else
                             {
-                                logger.LogWarning("Duplicate animation list " + name + ": " + e.FileName);
+                                logger.Warning("Duplicate animation list " + name + ": " + e.FileName);
                             }
                             break;
 
@@ -340,12 +337,11 @@ namespace LOLViewer.IO
 
                             if (!animations.ContainsKey(name))
                             {
-                                logger.LogEvent("Adding anm " + name + ": " + e.FileName);
                                 animations.Add(name, e);
                             }
                             else
                             {
-                                logger.LogWarning("Duplicate anm " + name + ": " + e.FileName);
+                                logger.Warning("Duplicate anm " + name + ": " + e.FileName);
                             }
                             break;
                     }
@@ -355,20 +351,20 @@ namespace LOLViewer.IO
             catch (Exception e)
             {
                 // Something went wrong. Most likely the RAF read failed due to a bad directory.
-                logger.LogError("Failed to open RAFs");
-                logger.LogError(e.Message);
+                logger.Error("Failed to open RAFs");
+                logger.Error(e.Message);
                 return false;
             }
 
             return true;
         }
 
-        private void GenerateModelDefinitions(TraceLogger logger)
+        private void GenerateModelDefinitions(Logger logger)
         {
             foreach (RAFFileListEntry f in inibins)
             {
                 InibinFile iniFile = new InibinFile();
-                bool readResult = InibinReader.Read(f, ref iniFile, true);
+                bool readResult = InibinReader.Read(f, ref iniFile, logger);
 
                 if (readResult == true)
                 {
@@ -413,26 +409,26 @@ namespace LOLViewer.IO
                             {
                                 if (models.ContainsKey(name) == false)
                                 {
-                                    logger.LogEvent("Adding model definition: " + name);
+                                    logger.Event("Adding model definition: " + name);
                                     models.Add(name, model);
                                 }
                                 else
                                 {
-                                    logger.LogWarning("Duplicate model definition: " + name);
+                                    logger.Warning("Duplicate model definition: " + name);
                                 }
                             }
                         }
                         catch (Exception e)
                         {
-                            logger.LogError("Unable to store model definition: " + name);
-                            logger.LogError(e.Message);
+                            logger.Error("Unable to store model definition: " + name);
+                            logger.Error(e.Message);
                         }
                     }
                 }
             }
         }
 
-        private bool StoreModel(ModelDefinition def, out LOLModel model, TraceLogger logger)
+        private bool StoreModel(ModelDefinition def, out LOLModel model, Logger logger)
         {
             model = new LOLModel();
             model.skinNumber = def.skin;
@@ -445,7 +441,7 @@ namespace LOLViewer.IO
             }
             else
             {
-                logger.LogError("Unable to find skn file: " + def.skn);
+                logger.Error("Unable to find skn file: " + def.skn);
                 return false;
             }
 
@@ -456,7 +452,7 @@ namespace LOLViewer.IO
             }
             else
             {
-                logger.LogError("Unable to find skl file: " + def.skl);
+                logger.Error("Unable to find skl file: " + def.skl);
                 return false;
             }
 
@@ -467,14 +463,14 @@ namespace LOLViewer.IO
             }
             else
             {
-                logger.LogError("Unable to find texture file: " + def.tex);
+                logger.Error("Unable to find texture file: " + def.tex);
                 return false;
             }
 
             return true;
         }
 
-        private bool StoreAnimations(ref LOLModel model, TraceLogger logger)
+        private bool StoreAnimations(ref LOLModel model, Logger logger)
         {
             bool result = true;
 
@@ -485,11 +481,11 @@ namespace LOLViewer.IO
             if (animationLists.ContainsKey(model.animationList) == true)
             {
                 result = ANMListReader.Read(model.skinNumber - 1, // indexing in animations.list assumes the original skin to be -1
-                    animationLists[model.animationList], ref animationStrings, true);
+                    animationLists[model.animationList], ref animationStrings, logger);
             }
             else
             {
-                logger.LogError("Unable to find animation list: " + model.animationList);
+                logger.Error("Unable to find animation list: " + model.animationList);
             }
 
             if (result == true)
@@ -505,12 +501,12 @@ namespace LOLViewer.IO
                         }
                         else
                         {
-                            logger.LogError("Duplicate animation: " + a.Key);
+                            logger.Error("Duplicate animation: " + a.Key);
                         }
                     }
                     else
                     {
-                        logger.LogError("Unable to find animation: " + a.Value);
+                        logger.Error("Unable to find animation: " + a.Value);
                     }
                 }
             }

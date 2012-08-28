@@ -40,7 +40,7 @@ using System.Drawing.Imaging;
 
 using Tao.DevIl;
 
-using LOLFileReader.Diagnostics;
+using CSharpLogger;
 
 using RAFlibPlus;
 
@@ -54,10 +54,10 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref Bitmap bitmap)
-        {
-            return Read(file, ref bitmap, false);
-        }
+        //public static bool Read(RAFFileListEntry file, ref Bitmap bitmap)
+        //{
+        //    return Read(file, ref bitmap, false);
+        //}
 
         /// <summary>
         /// Read in binary .dds file from RAF.
@@ -65,12 +65,11 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref Bitmap bitmap, bool enableLogging)
+        public static bool Read(RAFFileListEntry file, ref Bitmap bitmap, Logger logger)
         {
             bool result = true;
 
-            TraceLogger logger = new TraceLogger(enableLogging);
-            logger.LogEvent("Reading dds: " + file.FileName);
+            logger.Event("Reading dds: " + file.FileName);
 
             try
             {
@@ -112,8 +111,8 @@ namespace LOLFileReader
             }
             catch(Exception e)
             {
-                logger.LogError("Unable to open dds file: " + file.FileName);
-                logger.LogError(e.Message);
+                logger.Error("Unable to open dds file: " + file.FileName);
+                logger.Error(e.Message);
                 result = false;
             }
 
