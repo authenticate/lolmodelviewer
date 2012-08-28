@@ -40,6 +40,8 @@ using LOLFileReader;
 
 using LOLViewer.IO;
 
+using CSharpLogger;
+
 namespace LOLViewer.Graphics
 {
     class GLRiggedModel
@@ -87,7 +89,7 @@ namespace LOLViewer.Graphics
         /// <param name="skn">The .skn data.</param>
         /// <param name="skl">The .skl data.</param>
         /// <returns></returns>
-        public bool Create(SKNFile skn, SKLFile skl, TraceLogger logger)
+        public bool Create(SKNFile skn, SKLFile skl, Logger logger)
         {
             bool result = true;
 
@@ -247,7 +249,7 @@ namespace LOLViewer.Graphics
         private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
             List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights, List<uint> indices,
             List<Quaternion> boneOrientations, List<Vector3> bonePositions, List<float> boneScales,
-            List<String> boneNames, List<int> boneParents, List<uint> boneIDs, TraceLogger logger)
+            List<String> boneNames, List<int> boneParents, List<uint> boneIDs, Logger logger)
         {
             // Depending on the version of the model, the look ups change.
             if (version == 2 || version == 0)
@@ -277,14 +279,14 @@ namespace LOLViewer.Graphics
         private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
             List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights, 
             List<uint> indices, List<Quaternion> boneOrientations, List<Vector3> bonePositions,
-            List<float> boneScales, List<String> boneNames, List<int> boneParents, TraceLogger logger)
+            List<float> boneScales, List<String> boneNames, List<int> boneParents, Logger logger)
         {
             bool result = true;
 
             this.version = version;
             this.numIndices = indices.Count;
 
-            logger.LogEvent("Creating GL rigged model.");
+            logger.Event("Creating GL rigged model.");
 
             // Create the initial binding joints.
             rig.Create(boneOrientations, bonePositions, boneScales, boneParents);
@@ -581,7 +583,7 @@ namespace LOLViewer.Graphics
 
             if (result == false)
             {
-                logger.LogError("Failed to create GL rigged model.");
+                logger.Error("Failed to create GL rigged model.");
             }
 
             return result;

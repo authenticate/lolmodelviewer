@@ -40,6 +40,8 @@ using LOLFileReader;
 
 using LOLViewer.IO;
 
+using CSharpLogger;
+
 namespace LOLViewer.Graphics
 {
     class GLStaticModel
@@ -56,7 +58,7 @@ namespace LOLViewer.Graphics
             textureName = String.Empty;
         }
 
-        public bool Create(SKNFile file, TraceLogger logger)
+        public bool Create(SKNFile file, Logger logger)
         {
             List<float> vertexPositions = new List<float>();
             List<float> vertexNormals = new List<float>();
@@ -89,11 +91,11 @@ namespace LOLViewer.Graphics
         //
 
         private bool Create(List<float> vertexPositions, List<float> vertexNormals,
-            List<float> vertexTextureCoordinates, List<uint> indices, TraceLogger logger)
+            List<float> vertexTextureCoordinates, List<uint> indices, Logger logger)
         {
             bool result = true;
 
-            logger.LogEvent("Creating OpenGL static model.");
+            logger.Event("Creating OpenGL static model.");
 
             numIndices = indices.Count;
 
@@ -288,7 +290,7 @@ namespace LOLViewer.Graphics
             }
             else
             {
-                logger.LogError("Failed to create OpenGL static model.");
+                logger.Error("Failed to create OpenGL static model.");
             }
 
             return result;

@@ -37,7 +37,7 @@ using System.Text;
 
 using System.IO;
 
-using LOLFileReader.Diagnostics;
+using CSharpLogger;
 
 using RAFlibPlus;
 
@@ -51,10 +51,10 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref ANMFile data)
-        {
-            return Read(file, ref data, false);
-        }
+        //public static bool Read(RAFFileListEntry file, ref ANMFile data)
+        //{
+        //    return Read(file, ref data, false);
+        //}
 
         /// <summary>
         /// Read in binary .anm file from RAF.
@@ -62,12 +62,11 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        public static bool Read(RAFFileListEntry file, ref ANMFile data, bool enableLogging)
+        public static bool Read(RAFFileListEntry file, ref ANMFile data, Logger logger)
         {
             bool result = true;
 
-            TraceLogger logger = new TraceLogger(enableLogging);
-            logger.LogEvent("Reading anm: " + file.FileName);
+            logger.Event("Reading anm: " + file.FileName);
 
             try
             {
@@ -78,8 +77,8 @@ namespace LOLFileReader
             }
             catch(Exception e)
             {
-                logger.LogError("Unable to open memory stream: " + file.FileName);
-                logger.LogError(e.Message);
+                logger.Error("Unable to open memory stream: " + file.FileName);
+                logger.Error(e.Message);
                 result = false;
             }
 
@@ -91,7 +90,7 @@ namespace LOLFileReader
         // (Because nested Try/Catch looks nasty in one function block.)
         //
 
-        private static bool ReadBinary(MemoryStream input, ref ANMFile data, TraceLogger logger)
+        private static bool ReadBinary(MemoryStream input, ref ANMFile data, Logger logger)
         {
             bool result = true;
 
@@ -103,15 +102,15 @@ namespace LOLFileReader
             }
             catch(Exception e)
             {
-                logger.LogError("Unable to open binary reader.");
-                logger.LogError(e.Message);
+                logger.Error("Unable to open binary reader.");
+                logger.Error(e.Message);
                 result = false;
             }
 
             return result;
         }
 
-        private static bool ReadData(BinaryReader file, ref ANMFile data, TraceLogger logger)
+        private static bool ReadData(BinaryReader file, ref ANMFile data, Logger logger)
         {
             bool result = true;
 
@@ -181,24 +180,24 @@ namespace LOLFileReader
                 // Unknown version
                 else
                 {
-                    logger.LogError("Unknown anm version: " + data.version);
+                    logger.Error("Unknown anm version: " + data.version);
                     result = false; 
                 }
             }
             catch(Exception e)
             {
-                logger.LogError("Anm reading error.");
-                logger.LogError(e.Message);
+                logger.Error("Anm reading error.");
+                logger.Error(e.Message);
                 result = false;
             }
 
-            logger.LogEvent("Magic One: " + data.magicOne);
-            logger.LogEvent("Magic Two: " + data.magicTwo);
-            logger.LogEvent("Magic Three: " + data.magicThree);
-            logger.LogEvent("Version: " + data.version);
-            logger.LogEvent("Number of Bones: " + data.numberOfBones);
-            logger.LogEvent("Number of Frames: " + data.numberOfFrames);
-            logger.LogEvent("Playback FPS: " + data.playbackFPS);
+            logger.Event("Magic One: " + data.magicOne);
+            logger.Event("Magic Two: " + data.magicTwo);
+            logger.Event("Magic Three: " + data.magicThree);
+            logger.Event("Version: " + data.version);
+            logger.Event("Number of Bones: " + data.numberOfBones);
+            logger.Event("Number of Frames: " + data.numberOfFrames);
+            logger.Event("Playback FPS: " + data.playbackFPS);
 
             return result;
         }

@@ -42,13 +42,15 @@ using LOLFileReader;
 
 using LOLViewer.IO;
 
+using CSharpLogger;
+
 namespace LOLViewer.GUI
 {
     public partial class LoadingModelsWindow : Form
     {
         public DialogResult result;
         public LOLDirectoryReader reader;
-        public TraceLogger logger;
+        public Logger logger;
 
         public LoadingModelsWindow()
         {
@@ -89,13 +91,13 @@ namespace LOLViewer.GUI
             bool readResult = reader.Read( logger );
             if (readResult == true)
             {
-                logger.LogEvent("Sorting models.");
+                logger.Event("Sorting models.");
                 result = DialogResult.OK;
                 reader.SortModelNames();
             }
             else
             {
-                logger.LogError("Failed to read models.");
+                logger.Error("Failed to read models.");
                 result = DialogResult.Abort;
             }
         }
