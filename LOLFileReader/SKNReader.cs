@@ -49,17 +49,6 @@ namespace LOLFileReader
         /// <param name="file">The file.</param>
         /// <param name="data">The contents of the file are stored in here.</param>
         /// <returns></returns>
-        //public static bool Read(RAFFileListEntry file, ref SKNFile data)
-        //{
-        //    return Read(file, ref data, false);
-        //}
-
-        /// <summary>
-        /// Read in binary .skn file from RAF.
-        /// </summary>
-        /// <param name="file">The file.</param>
-        /// <param name="data">The contents of the file are stored in here.</param>
-        /// <returns></returns>
         public static bool Read(RAFFileListEntry file, ref SKNFile data, Logger logger)
         {
             bool result = true;

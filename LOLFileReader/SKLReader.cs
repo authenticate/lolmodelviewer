@@ -40,11 +40,6 @@ namespace LOLFileReader
 {
     public class SKLReader
     {
-        //public static bool Read(RAFFileListEntry file, ref SKLFile data)
-        //{
-        //    return Read(file, ref data, );
-        //}
-
         public static bool Read(RAFFileListEntry file, ref SKLFile data, Logger logger)
         {
             bool result = true;
@@ -69,10 +64,8 @@ namespace LOLFileReader
         }
 
         
-         //Helper Functions. 
-         //(Because nested Try/Catch looks nasty in one function block.)
-        
-
+        //Helper Functions. 
+        //(Because nested Try/Catch looks nasty in one function block.) 
         private static bool ReadBinary(MemoryStream input, ref SKLFile data, Logger logger)
         {
             bool result = true;

@@ -47,11 +47,6 @@ namespace LOLFileReader
 {
     public class ANMListReader
     {
-        //public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations)
-        //{
-        //    return Read(skin, file, ref animations, false);
-        //}
-
         public static bool Read(int skin, RAFFileListEntry file, ref Dictionary<String, String> animations, Logger logger)
         {
             bool result = true;
