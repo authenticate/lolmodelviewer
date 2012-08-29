@@ -55,11 +55,6 @@ namespace LOLFileReader
 {
     public class InibinReader
     {
-        //public static bool Read(RAFFileListEntry file, ref InibinFile data)
-        //{
-        //    return Read(file, ref data, false);
-        //}
-
         public static bool Read(RAFFileListEntry file, ref InibinFile data, Logger logger)
         {
             bool result = true;
