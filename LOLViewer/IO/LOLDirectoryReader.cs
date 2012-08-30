@@ -67,6 +67,8 @@ namespace LOLViewer.IO
 
         public Dictionary<String, LOLModel> models;
 
+        Stopwatch timer = new Stopwatch();
+
         public LOLDirectoryReader()
         {
             root = DEFAULT_ROOT;
@@ -246,9 +248,10 @@ namespace LOLViewer.IO
         {
             try
             {
+                timer.Start();
                 RAFMasterFileList rafFiles = new RAFMasterFileList(dir.FullName);
+                timer.Stop();
                 logger.Event("Opening the 'filearchives' directory: " + dir.FullName);
-
                 foreach (RAFMasterFileList.RAFSearchResult result in rafFiles.SearchFileEntries(new string[] { ".dds", ".skn", ".skl", ".inibin", "animations.list", ".anm" }, RAFMasterFileList.RAFSearchType.All))
                 {
                     RAFFileListEntry e = result.value;
