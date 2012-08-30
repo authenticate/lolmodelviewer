@@ -82,7 +82,10 @@ namespace LOLViewer.GUI
 
         // Animation Control Handle
         private AnimationController animationController;
-       
+
+        Stopwatch loadTimer = new Stopwatch();
+        Stopwatch logTimer = new Stopwatch();
+
         public MainWindow()
         {
             logger = new Logger(DEFAULT_LOG_FILE); // Not checking result.
@@ -397,32 +400,45 @@ namespace LOLViewer.GUI
 
         private void OnReadModels(object sender, EventArgs e)
         {
+            loadTimer.Start();
             // Clear old data.
             modelListBox.Items.Clear();
             renderer.DestroyCurrentModels();
             glControlMain.Invalidate();
 
-            LoadingModelsWindow loader = new LoadingModelsWindow();
-            loader.reader = reader;
-            loader.logger = logger;
-            loader.StartPosition = FormStartPosition.CenterParent;
-            loader.ShowDialog();
+            // Stop auto flushing until intial load is done to save performance time
+            logger.HoldFlushes();
 
-            DialogResult result = loader.result;
-            if (result == DialogResult.Abort)
+            if (!reader.Read(logger))
             {
-                MessageBox.Show(this,
-                    "Unable to read the League of Legends' installation directory. " +
-                    "If you installed League of Legends " +
-                    "in a non-default location, use 'File -> Read...' to manually " +
-                    "select the League of Legends' installation directory.",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                logger.Error("Failed to read models");
                 return;
             }
-            else if (result == DialogResult.Cancel)
-            {
-                return;
-            }
+
+            reader.SortModelNames();
+
+
+            //LoadingModelsWindow loader = new LoadingModelsWindow();
+            //loader.reader = reader;
+            //loader.logger = logger;
+            //loader.StartPosition = FormStartPosition.CenterParent;
+            //loader.ShowDialog();
+
+            //DialogResult result = loader.result;
+            //if (result == DialogResult.Abort)
+            //{
+            //    MessageBox.Show(this,
+            //        "Unable to read the League of Legends' installation directory. " +
+            //        "If you installed League of Legends " +
+            //        "in a non-default location, use 'File -> Read...' to manually " +
+            //        "select the League of Legends' installation directory.",
+            //        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
+            //else if (result == DialogResult.Cancel)
+            //{
+            //    return;
+            //}
 
             // On successful read, write the root directory to file.
             logger.Event("Storing League of Legends installation directory path.");
@@ -464,6 +480,11 @@ namespace LOLViewer.GUI
             }
 
             modelListBox.EndUpdate();
+
+            // Re-enable auto log flushing
+            logger.RestartFlushes();
+
+            loadTimer.Stop();
         }
 
         //
