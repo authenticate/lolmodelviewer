@@ -491,13 +491,11 @@ namespace LOLViewer.GUI
 
             modelListBox.EndUpdate();
 
-            // Re-enable auto log flushing
-            logger.RestartFlushes();
-
             // Set Status text and progress bar
             mainWindowStatusLabel.Text = "Ready.";
             mainWindowProgressBar.Visible = false;
 
+            // Re-enable auto log flushing
             logger.RestartFlushes();
         }
 
