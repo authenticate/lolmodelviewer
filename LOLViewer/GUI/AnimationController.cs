@@ -52,10 +52,8 @@ namespace LOLViewer.GUI
         //
 
         public OpenTK.GLControl glControlMain;
-        public CheckBox enableAnimationCheckBox;
+        public Button enableAnimationButton;
         public ComboBox currentAnimationComboBox;
-        public Button previousKeyFrameButton;
-        public Button nextKeyFrameButton;
         public Button playAnimationButton;
         public TrackBar timelineTrackBar;
 
@@ -77,9 +75,9 @@ namespace LOLViewer.GUI
             isEnabled = false;
             StopAnimation();
 
+            enableAnimationButton.Text = "Enable";
+
             currentAnimationComboBox.Enabled = false;
-            previousKeyFrameButton.Enabled = false;
-            nextKeyFrameButton.Enabled = false;
             playAnimationButton.Enabled = false;
             timelineTrackBar.Enabled = false;
 
@@ -91,9 +89,9 @@ namespace LOLViewer.GUI
             isEnabled = true;
             StopAnimation();
 
+            enableAnimationButton.Text = "Disable";
+
             currentAnimationComboBox.Enabled = true;
-            previousKeyFrameButton.Enabled = true;
-            nextKeyFrameButton.Enabled = true;
             playAnimationButton.Enabled = true;
             timelineTrackBar.Enabled = true;
 
@@ -164,32 +162,6 @@ namespace LOLViewer.GUI
             }
         }
 
-        public void IncrementAnimation()
-        {
-            if (isEnabled == true)
-            {
-                StopAnimation();
-                renderer.IncrementAnimations();
-
-                UpdateTimelineTrackBar();
-
-                glControlMain.Invalidate();
-            }
-        }
-
-        public void DecrementAnimation()
-        {
-            if (isEnabled == true)
-            {
-                StopAnimation();
-                renderer.DecrementAnimations();
-
-                UpdateTimelineTrackBar();
-
-                glControlMain.Invalidate();
-            }
-        }
-
         //
         // Input Handlers
         //
@@ -197,16 +169,6 @@ namespace LOLViewer.GUI
         public void OnCurrentAnimationComboBoxSelectedIndexChanged(object sender, EventArgs e)
         {
             SetAnimation();
-        }
-
-        public void OnPreviousKeyFrameButtonClick(object sender, EventArgs e)
-        {
-            DecrementAnimation();
-        }
-
-        public void OnNextKeyFrameButtonClick(object sender, EventArgs e)
-        {
-            IncrementAnimation();
         }
 
         public void OnPlayAnimationButtonClick(object sender, EventArgs e)
@@ -221,7 +183,7 @@ namespace LOLViewer.GUI
             }         
         }
 
-        public void OnEnableCheckBoxClick(object sender, EventArgs e)
+        public void OnEnableAnimationButtonClick(object sender, EventArgs e)
         {
             if (isEnabled == true)
             {

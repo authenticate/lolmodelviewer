@@ -572,22 +572,6 @@ namespace LOLViewer.Graphics
             GL.UseProgram( 0 );
         }
 
-        public void IncrementAnimations()
-        {
-            foreach (var m in rModels)
-            {
-                m.Value.IncrementCurrentAnimation();
-            }
-        }
-
-        public void DecrementAnimations()
-        {
-            foreach (var m in rModels)
-            {
-                m.Value.DecrementCurrentAnimation();
-            }
-        }
-
         // TODO: Doesn't support multiple models.
         public void SetCurrentFrameInCurrentAnimation(int frame, float percentTowardsNextFrame)
         {

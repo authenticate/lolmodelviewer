@@ -144,8 +144,10 @@ namespace LOLViewer.GUI
 
             InitializeComponent();
 
+            mainWindowProgressBar.Style = ProgressBarStyle.Marquee;
+            mainWindowProgressBar.Value = 100;
+
             modelScaleTrackbar.Value = (int)(GLRenderer.DEFAULT_MODEL_SCALE * DEFAULT_SCALE_TRACKBAR);
-            yOffsetTrackbar.Value = -GLRenderer.DEFAULT_MODEL_YOFFSET;
 
             lastSearch = String.Empty;
             currentSearchSubset = new List<String>();
@@ -180,7 +182,6 @@ namespace LOLViewer.GUI
             modelListBox.KeyPress += new KeyPressEventHandler(OnModelListKeyPress);
 
             // Trackbars
-            yOffsetTrackbar.Scroll += new EventHandler(YOffsetTrackbarOnScroll);
             modelScaleTrackbar.Scroll += new EventHandler(ModelScaleTrackbarOnScroll);
 
             // Buttons
@@ -197,20 +198,16 @@ namespace LOLViewer.GUI
             animationController = new AnimationController();
 
             // Set references
-            animationController.enableAnimationCheckBox = enableAnimationCheckBox;
+            animationController.enableAnimationButton = enableAnimationButton;
             animationController.currentAnimationComboBox = currentAnimationComboBox;
-            animationController.nextKeyFrameButton = nextKeyFrameButton;
             animationController.playAnimationButton = playAnimationButton;
-            animationController.previousKeyFrameButton = previousKeyFrameButton;
             animationController.glControlMain = glControlMain;
             animationController.timelineTrackBar = timelineTrackBar;
 
             animationController.renderer = renderer;
 
             // Set callbacks.
-            enableAnimationCheckBox.Click += new EventHandler(animationController.OnEnableCheckBoxClick);
-            previousKeyFrameButton.Click += new EventHandler(animationController.OnPreviousKeyFrameButtonClick);
-            nextKeyFrameButton.Click += new EventHandler(animationController.OnNextKeyFrameButtonClick);
+            enableAnimationButton.Click += new EventHandler(animationController.OnEnableAnimationButtonClick);
             playAnimationButton.Click += new EventHandler(animationController.OnPlayAnimationButtonClick);
             currentAnimationComboBox.SelectedIndexChanged += new EventHandler(animationController.OnCurrentAnimationComboBoxSelectedIndexChanged);
             timelineTrackBar.Scroll += new EventHandler(animationController.OnTimelineTrackBar);
@@ -397,21 +394,58 @@ namespace LOLViewer.GUI
 
         private void OnReadModels(object sender, EventArgs e)
         {
+            // Update GUI.
+            mainWindowStatusLabel.Text = "Reading League of Legends' directory...";
+            mainWindowProgressBar.Visible = true;
+
             // Clear old data.
             modelListBox.Items.Clear();
             renderer.DestroyCurrentModels();
             glControlMain.Invalidate();
 
-            // Stop auto flushing until intial load is done to save performance time
+            // Create a background worker to read in the models.
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += new DoWorkEventHandler(ReadModels);
+            worker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(ReadModelsCallback);
+            worker.RunWorkerAsync();
+        }
+
+        #region Helper functions for the read models background worker
+
+        private void ReadModels(object sender, DoWorkEventArgs e)
+        {
             logger.HoldFlushes();
 
-            if (!reader.Read(logger))
+            // Read League of Legends' information.
+            bool result = reader.Read(logger);
+            if (result == true)
             {
-                logger.Error("Failed to read models");
+                logger.Event("Sorting models.");
+                reader.SortModelNames();
+            }
+            else
+            {
+                // Bail if reading fails.
+                logger.Error("Failed to read models.");
+
+                // UI calls need to be executed on the main thread.
+                this.BeginInvoke((Action)(() => {
+                    // There's a race condition for setting this text.  Doesn't really matter.
+                    // The message box should get the point across.
+                    mainWindowStatusLabel.Text = "Unable to read the League of Legends' installation directory. " +
+                        "Try using 'File -> Read...' to manually select a directory.";
+                    mainWindowProgressBar.Visible = false;
+
+                    MessageBox.Show(this,
+                        "Unable to read the League of Legends' installation directory. " +
+                        "If you installed League of Legends " +
+                        "in a non-default location, use 'File -> Read...' to manually " +
+                        "select the League of Legends' installation directory.",
+                        "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }));
+                
                 return;
             }
-
-            reader.SortModelNames();
 
             // On successful read, write the root directory to file.
             logger.Event("Storing League of Legends installation directory path.");
@@ -442,7 +476,10 @@ namespace LOLViewer.GUI
                     file.Close();
                 }
             }
+        }
 
+        private void ReadModelsCallback(object sender, RunWorkerCompletedEventArgs e)
+        {
             // Populate the model list box.
             modelListBox.BeginUpdate();
 
@@ -456,7 +493,15 @@ namespace LOLViewer.GUI
 
             // Re-enable auto log flushing
             logger.RestartFlushes();
+
+            // Set Status text and progress bar
+            mainWindowStatusLabel.Text = "Ready.";
+            mainWindowProgressBar.Visible = false;
+
+            logger.RestartFlushes();
         }
+
+        #endregion
 
         //
         // Model List Box Handlers
@@ -504,20 +549,23 @@ namespace LOLViewer.GUI
         //
         // Trackbar Handlers
         //
-        private void YOffsetTrackbarOnScroll(object sender, EventArgs e)
-        {
-            Matrix4 world = Matrix4.Scale(modelScaleTrackbar.Value / DEFAULT_SCALE_TRACKBAR);
-            world.M42 = (float)-yOffsetTrackbar.Value;
-            renderer.world = world;
-
-            // Redraw.
-            GLControlMainOnPaint(sender, null);
-        }
-
         private void ModelScaleTrackbarOnScroll(object sender, EventArgs e)
         {
+            // Store old translation.
+            Vector3 translation = Vector3.Zero;
+            translation.X = renderer.world.M41;
+            translation.Y = renderer.world.M42;
+            translation.Z = renderer.world.M43;
+
+            // Create the scale.
             Matrix4 world = Matrix4.Scale(modelScaleTrackbar.Value / DEFAULT_SCALE_TRACKBAR);
-            world.M42 = (float)-yOffsetTrackbar.Value;
+            
+            // Reapply old translation.
+            world.M41 = translation.X;
+            world.M42 = translation.Y;
+            world.M43 = translation.Z;
+
+            // Store result
             renderer.world = world;
 
             // Redraw.
