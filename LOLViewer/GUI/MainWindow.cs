@@ -430,12 +430,6 @@ namespace LOLViewer.GUI
 
                 // UI calls need to be executed on the main thread.
                 this.BeginInvoke((Action)(() => {
-                    // There's a race condition for setting this text.  Doesn't really matter.
-                    // The message box should get the point across.
-                    mainWindowStatusLabel.Text = "Unable to read the League of Legends' installation directory. " +
-                        "Try using 'File -> Read...' to manually select a directory.";
-                    mainWindowProgressBar.Visible = false;
-
                     MessageBox.Show(this,
                         "Unable to read the League of Legends' installation directory. " +
                         "If you installed League of Legends " +
