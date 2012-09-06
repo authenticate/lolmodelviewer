@@ -46,11 +46,11 @@ namespace LOLViewer.Graphics
 {
     class GLStaticModel
     {
-        public int numIndices;
+        private int numIndices;
         public String textureName;
 
         // OpenGL objects.
-        public int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer;
+        private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer;
 
         public GLStaticModel() 
         {
@@ -302,11 +302,6 @@ namespace LOLViewer.Graphics
 
             GL.DrawElements(BeginMode.Triangles, numIndices,
                 DrawElementsType.UnsignedInt, 0);
-        }
-
-        public void SetTexture(String name)
-        {
-            textureName = name;
         }
 
         public void Destory()

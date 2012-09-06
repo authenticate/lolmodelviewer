@@ -48,7 +48,7 @@ namespace LOLViewer.GUI
             this.Shown += new EventHandler(OnAboutWindowShown);
         }
 
-        void OnAboutWindowShown(object sender, EventArgs e)
+        private void OnAboutWindowShown(object sender, EventArgs e)
         {
             descriptionTextBox.DeselectAll();
         }

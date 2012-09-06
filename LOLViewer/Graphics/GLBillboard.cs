@@ -39,10 +39,10 @@ namespace LOLViewer.Graphics
 {
     class GLBillboard
     {
-        public int numIndices;
+        private int numIndices;
 
         // OpenGL objects.
-        public int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer;
+        private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer;
 
         public GLBillboard() 
         {

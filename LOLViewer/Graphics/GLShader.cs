@@ -50,33 +50,6 @@ namespace LOLViewer.Graphics
         }
 
         /// <summary>
-        /// Loads a text file containing the shader code.
-        /// </summary>
-        /// <param name="fileName">
-        /// The name of the file including its path relative to
-        /// the CWD.
-        /// </param>
-        /// <returns></returns>
-        public bool LoadFromFile(String fileName)
-        {
-            bool result = true;
-
-            try
-            {
-                System.IO.StreamReader myFile =
-                        new System.IO.StreamReader(fileName);
-                data = myFile.ReadToEnd();
-                myFile.Close();
-            }
-            catch
-            {
-                result = false;
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Loads the shader from a string
         /// </summary>
         /// <param name="data">
@@ -86,7 +59,6 @@ namespace LOLViewer.Graphics
         public bool LoadFromMemory(String data)
         {
             this.data = data;
-
             return true;
         }
 

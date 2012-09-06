@@ -46,7 +46,7 @@ namespace LOLViewer.Graphics
     public class GLCamera
     {
         // Keybinding
-        public enum CameraKeyValues
+        private enum CameraKeyValues
         {
             Left = 0,
             Right = 1,
@@ -55,11 +55,12 @@ namespace LOLViewer.Graphics
             Reset = 4,
             Size = 5
         };
-        public Dictionary<Keys, CameraKeyValues> bindings;
+        private Dictionary<Keys, CameraKeyValues> bindings;
 
         // View / Projection Parameters
-        public float fov, aspect, near, far;
-        public Vector3 eye, target, defaultEye, defaultTarget;
+        private float fov, aspect, near, far;
+        private Vector3 eye, target;
+        public Vector3 defaultEye, defaultTarget;
         public Matrix4 view, projection;
 
         // We need to account for the fact that OpenGL does not have
@@ -67,12 +68,12 @@ namespace LOLViewer.Graphics
         // left handed as a DirectX pipeline would.  Then, at the very last step,
         // we multiply in the conversion into the view matrix.  This will convert
         // the data to a right handed system.
-        public Matrix4 handConverter;
+        private Matrix4 handConverter;
 
-        public Dictionary<CameraKeyValues, bool> keyState;
+        private Dictionary<CameraKeyValues, bool> keyState;
 
-        public Dictionary<MouseButtons, bool> mouseState;
-        public int wheelDelta;
+        private Dictionary<MouseButtons, bool> mouseState;
+        private int wheelDelta;
         private const float WHEEL_SCALE = 0.0005f;
 
         private const float MINIMUM_RADIUS = 35.0f;

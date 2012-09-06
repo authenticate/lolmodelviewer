@@ -42,6 +42,8 @@ namespace LOLViewer.GUI
 {
     public class AnimationController
     {
+        public GLRenderer renderer;
+
         public bool isEnabled;
         public bool isAnimating;
         public String currentAnimation;
@@ -67,9 +69,6 @@ namespace LOLViewer.GUI
             timer.Stop();
         }
 
-        // More references
-        public GLRenderer renderer;
-
         public void DisableAnimation()
         {
             isEnabled = false;
@@ -84,7 +83,7 @@ namespace LOLViewer.GUI
             renderer.isSkinning = false;
         }
 
-        public void EnableAnimation()
+        private void EnableAnimation()
         {
             isEnabled = true;
             StopAnimation();
@@ -96,32 +95,6 @@ namespace LOLViewer.GUI
             timelineTrackBar.Enabled = true;
 
             renderer.isSkinning = true;
-        }
-
-        public void StopAnimation()
-        {
-            isAnimating = false;
-            playAnimationButton.Text = "Play";
-
-            // Remove the update loop.
-            timer.Stop();
-            timer.Reset();
-            Application.Idle -= OnApplicationIdle;
-
-            glControlMain.Invalidate();
-        }
-
-        public void StartAnimation()
-        {
-            isAnimating = true;
-            playAnimationButton.Text = "Pause";
-
-            // Add an update loop.
-            Application.Idle += new EventHandler(OnApplicationIdle);
-            timer.Reset();
-            timer.Start();
-
-            glControlMain.Invalidate();
         }
 
         //
@@ -147,7 +120,7 @@ namespace LOLViewer.GUI
             }
         }
 
-        public void SetAnimation()
+        private void SetAnimation()
         {
             // Cache animation name.
             currentAnimation = currentAnimationComboBox.SelectedItem.ToString();
@@ -221,6 +194,7 @@ namespace LOLViewer.GUI
         //
         // Helper functions
         //
+
         private void UpdateTimelineTrackBar()
         {
             //
@@ -239,6 +213,32 @@ namespace LOLViewer.GUI
             {
                 timelineTrackBar.Value = timelineValue;
             }
+        }
+
+        private void StopAnimation()
+        {
+            isAnimating = false;
+            playAnimationButton.Text = "Play";
+
+            // Remove the update loop.
+            timer.Stop();
+            timer.Reset();
+            Application.Idle -= OnApplicationIdle;
+
+            glControlMain.Invalidate();
+        }
+
+        private void StartAnimation()
+        {
+            isAnimating = true;
+            playAnimationButton.Text = "Pause";
+
+            // Add an update loop.
+            Application.Idle += new EventHandler(OnApplicationIdle);
+            timer.Reset();
+            timer.Start();
+
+            glControlMain.Invalidate();
         }
     }
 }

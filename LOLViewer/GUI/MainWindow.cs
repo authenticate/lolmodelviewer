@@ -73,8 +73,8 @@ namespace LOLViewer.GUI
         private Logger logger;
 
         // Model Name Search Variables
-        public String lastSearch;
-        public List<String> currentSearchSubset;
+        private String lastSearch;
+        private List<String> currentSearchSubset;
 
         // GUI Variables
         // converts from World Transform scale to trackbar units.
@@ -130,7 +130,7 @@ namespace LOLViewer.GUI
                             logger.Event("Reading " + DEFAULT_DIRECTORY_FILE + ".");
 
                             fileReader = new BinaryReader(file);
-                            reader.root = fileReader.ReadString();
+                            reader.Root = fileReader.ReadString();
                             fileReader.Close();
                         }
                         catch
@@ -385,7 +385,7 @@ namespace LOLViewer.GUI
             if (result == DialogResult.OK)
             {
                 // Lets not check and let the directory reader sort it out.
-                reader.SetRoot(dlg.SelectedPath);
+                reader.Root = dlg.SelectedPath;
 
                 // Reread the models.
                 OnReadModels(sender, e);
@@ -461,7 +461,7 @@ namespace LOLViewer.GUI
                 {
                     logger.Event("Writing League of Legends directory path.");
                     writer = new BinaryWriter(file);
-                    writer.Write(reader.root);
+                    writer.Write(reader.Root);
                     writer.Close();
                 }
                 catch
