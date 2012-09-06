@@ -58,7 +58,7 @@ namespace LOLViewer.Graphics
             DDS
         };
 
-        public int textureBuffer;
+        private int textureBuffer;
         private TextureTarget target;
 
         public GLTexture()

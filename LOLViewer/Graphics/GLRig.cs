@@ -95,8 +95,8 @@ namespace LOLViewer.Graphics
         public const int MAX_BONES = 128;
         public GLJoint[] bindingJoints;
 
-        public GLBone[] currentFrame;
-        public GLBone[] nextFrame;
+        private GLBone[] currentFrame;
+        private GLBone[] nextFrame;
         
         public GLRig()
         {

@@ -49,27 +49,28 @@ namespace LOLViewer.IO
 {
     public class LOLDirectoryReader
     {
-        public const String DEFAULT_ROOT = "C:/Riot Games/League of Legends";
-        public const String DEFAULT_MODEL_ROOT = "/DATA/Characters";
-        public const String DEFAULT_RAF_DIRECTORY_ONE = "DATA";
-        public const String DEFAULT_RAF_DIRECTORY_TWO = "Characters";
+        private const String DEFAULT_ROOT = "C:/Riot Games/League of Legends";
+        private const String DEFAULT_MODEL_ROOT = "/DATA/Characters";
+        private const String DEFAULT_RAF_DIRECTORY_ONE = "DATA";
+        private const String DEFAULT_RAF_DIRECTORY_TWO = "Characters";
 
-        public const String DEFAULT_EXTRACTED_TEXTURES_ROOT = "content/textures/";
-        public String root;
+        private const String DEFAULT_EXTRACTED_TEXTURES_ROOT = "content/textures/";
 
-        public Dictionary<String, RAFFileListEntry> skls;
-        public Dictionary<String, RAFFileListEntry> skns;
-        public Dictionary<String, RAFFileListEntry> textures;
+        public String Root { get; set; }
 
-        public List<RAFFileListEntry> inibins;
-        public Dictionary<String, RAFFileListEntry> animationLists;
-        public Dictionary<String, RAFFileListEntry> animations;
+        private Dictionary<String, RAFFileListEntry> skls;
+        private Dictionary<String, RAFFileListEntry> skns;
+        private Dictionary<String, RAFFileListEntry> textures;
 
-        public Dictionary<String, LOLModel> models;
+        private List<RAFFileListEntry> inibins;
+        private Dictionary<String, RAFFileListEntry> animationLists;
+        private Dictionary<String, RAFFileListEntry> animations;
+
+        private Dictionary<String, LOLModel> models;
 
         public LOLDirectoryReader()
         {
-            root = DEFAULT_ROOT;
+            Root = DEFAULT_ROOT;
 
             inibins = new List<RAFFileListEntry>();
 
@@ -81,15 +82,6 @@ namespace LOLViewer.IO
             textures = new Dictionary<String, RAFFileListEntry>();
 
             models = new Dictionary<String,LOLModel>();
-        }
-
-        /// <summary>
-        /// Call this if LOL was installed in a non-default location.
-        /// </summary>
-        /// <param name="s">Full path to and including the "Riot Games" folder.</param>
-        public void SetRoot(String s)
-        {
-            root = s;
         }
 
         public bool Read(Logger logger)
@@ -111,12 +103,12 @@ namespace LOLViewer.IO
             DirectoryInfo rootDir = null;
             try
             {
-                logger.Event("Reading models from: " + root);
-                rootDir = new DirectoryInfo(root);
+                logger.Event("Reading models from: " + Root);
+                rootDir = new DirectoryInfo(Root);
             }
             catch 
             {
-                logger.Error("Unable to get the directory information: " + root);
+                logger.Error("Unable to get the directory information: " + Root);
                 result = false;
             }
 
@@ -133,12 +125,12 @@ namespace LOLViewer.IO
                     // If the finding or reading fails, bail.
                     if (!result)
                     {
-                        logger.Error("Unable to find the 'filearchives' directory: " + root);
+                        logger.Error("Unable to find the 'filearchives' directory: " + Root);
                     }
                 }
                 catch (Exception e)
                 {
-                    logger.Error("Unable to open directory: " + root);
+                    logger.Error("Unable to open directory: " + Root);
                     logger.Error(e.Message);
                     result = false;
                 }

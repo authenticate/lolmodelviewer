@@ -46,23 +46,24 @@ namespace LOLViewer.Graphics
 {
     class GLRiggedModel
     {
-        public int version;
-        public int numIndices;
+        private int version;
         public String textureName;
 
         public GLRig rig;
 
+        private int numIndices;
+
         // OpenGL objects.
-        public int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer,
+        private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer,
             vertexBoneBuffer, vertexBoneWeightBuffer;        
 
         // Not 100% if we need this.
         // Bones might map in order from the .anm files.
-        public Dictionary<String, int> boneNameToIndex;
+        private Dictionary<String, int> boneNameToIndex;
 
-        public String   currentAnimation;
-        public float    currentFrameTime;
-        public int      currentFrame;
+        private String currentAnimation;
+        private float currentFrameTime;
+        public int currentFrame;
         public Dictionary<String, GLAnimation> animations;
 
         public GLRiggedModel()
@@ -595,11 +596,6 @@ namespace LOLViewer.Graphics
 
             GL.DrawElements(BeginMode.Triangles, numIndices,
                 DrawElementsType.UnsignedInt, 0);
-        }
-        
-        public void SetTexture(String name)
-        {
-            textureName = name;
         }
 
         public void AddAnimation(String name, ANMFile animation)
