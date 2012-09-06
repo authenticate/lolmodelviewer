@@ -81,9 +81,9 @@ namespace LOLViewer.GUI
             this.descriptionTextBox.Size = new System.Drawing.Size(156, 166);
             this.descriptionTextBox.TabIndex = 1;
             this.descriptionTextBox.TabStop = false;
-            this.descriptionTextBox.Text = "Original Author: \r\n - Authentication\r\n\r\nContributors:\r\n - lordgreggreg\r\n\r\nSpecial" +
-                " Thanks:\r\n - ThiSpawn\r\n - ItzWarty\r\n - yourbuddypal\r\n - RobTheBloke (Gamedev.net" +
-                ")\r\n - RichieSams";
+            this.descriptionTextBox.Text = "Original Author: \r\n - Authentication\r\n\r\nContributors:\r\n - RichieSams\r\n - lordgreg" +
+                "greg\r\n\r\nSpecial Thanks:\r\n - ThiSpawn\r\n - ItzWarty\r\n - yourbuddypal\r\n - RobTheBlo" +
+                "ke (Gamedev.net)";
             // 
             // okButton
             // 

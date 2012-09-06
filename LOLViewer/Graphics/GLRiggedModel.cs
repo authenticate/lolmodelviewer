@@ -716,28 +716,6 @@ namespace LOLViewer.Graphics
             return result;
         }
 
-        public void IncrementCurrentAnimation()
-        {
-            if (animations.ContainsKey(currentAnimation) == true)
-            {
-                currentFrame = (currentFrame + 1) % (int)animations[currentAnimation].numberOfFrames;
-                currentFrameTime = 0;
-            }
-        }
-
-        public void DecrementCurrentAnimation()
-        {
-            if (animations.ContainsKey(currentAnimation) == true)
-            {
-                currentFrame--;
-                if (currentFrame < 0)
-                {
-                    currentFrame = (int)animations[currentAnimation].numberOfFrames - 1;
-                }
-                currentFrameTime = 0;
-            }
-        }
-
         public void SetCurrentFrame( int frame, float percentTowardsNextFrame )
         {  
             if (animations.ContainsKey(currentAnimation) == true)
