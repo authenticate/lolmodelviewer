@@ -417,11 +417,8 @@ namespace LOLViewer.Graphics
         public void TranslateModel(int x, int y, GLCamera camera)
         {
             // Invert the transformation pipeline.
-            Matrix4 inverseProjection = camera.Projection;
-            inverseProjection.Invert();
-
-            Matrix4 inverseView = camera.View;
-            inverseView.Invert();
+            Matrix4 inverseProjectionView = camera.View * camera.Projection;
+            inverseProjectionView.Invert();
 
             // Transform mouse coordinates into world space.
 
@@ -434,11 +431,8 @@ namespace LOLViewer.Graphics
             worldMouse.X = (2.0f * (worldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
             worldMouse.Y = -((2.0f * (worldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
             
-            // We are in screen space.  Need to convert into view space.
-            worldMouse = Vector4.Transform(worldMouse, inverseProjection);
-            
-            // We are in world space.  Need to convert into world space.
-            worldMouse = Vector4.Transform(worldMouse, inverseView);
+            // We are in screen space.  Need to convert into view space and then world space.
+            worldMouse = Vector4.Transform(worldMouse, inverseProjectionView);
 
             if (worldMouse.W > float.Epsilon || worldMouse.W < float.Epsilon)
             {
@@ -447,17 +441,17 @@ namespace LOLViewer.Graphics
                 worldMouse.Z /= worldMouse.W;
             }
 
-            // There's a few places where we invert Z, specifically the worldMouse, planePoint, and the result.
-            // This is because the camera interally converts the handedness of the coordinate system to accout for Riot's model
-            // data being built for DirectX.  So, we need to account for that conversion in our calculations here.  This is actually
-            // really bad and hacky.  It would be better to rewrite the importers to convert the handedness there and never worry about it again.
-            worldMouse.Z = -worldMouse.Z;
-
             // Get the world location of the model.  This is the point on the plane.
-            Vector3 planePoint = new Vector3(world.M41, world.M42, -world.M43);
+            Vector3 planePoint = new Vector3(world.M41, world.M42, world.M43);
 
             // Get the camera eye.  This is the line origin.
             Vector3 lineOrigin = camera.Eye;
+
+            // We need to invert the Z value.
+            // This is because the camera internally converts the handedness of the coordinate system to accout for Riot's model
+            // data being built for DirectX.  So, we need to remove  that conversion in our calculations here.  This is actually
+            // really bad and hacky.  It would be better to rewrite the importers to convert the handedness there and never worry about it again.
+            lineOrigin.Z = -lineOrigin.Z;
 
             // Create the normal of the plane.
             Vector3 planeNormal = lineOrigin - planePoint;
@@ -479,7 +473,6 @@ namespace LOLViewer.Graphics
 
             // Calculate the new model location.
             Vector3 result = lineOrigin + lineDirection * distance;
-            result.Z = -result.Z;
 
             // Store it.
             world.M41 = result.X;
