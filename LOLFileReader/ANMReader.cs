@@ -113,10 +113,11 @@ namespace LOLFileReader
 
                 data.magicThree = file.ReadUInt32();
 
-                // Version 0, 1, 2 Code
+                // Version 0, 1, 2, 3 Code
                 if (data.version == 0 ||
                     data.version == 1 ||
-                    data.version == 2)
+                    data.version == 2 ||
+                    data.version == 3)
                 {
                     data.numberOfBones = file.ReadUInt32();
                     data.numberOfFrames = file.ReadUInt32();
@@ -154,16 +155,6 @@ namespace LOLFileReader
 
                         data.bones.Add(bone);
                     }
-                }
-                // Version 3 Code
-                else if (data.version == 3)
-                {
-                    //
-                    // TODO: Still working on reverse engineering this.
-                    // For now, just bail.
-                    //
-
-                    result = false;
                 }
                 // Version 4 Code
                 else if (data.version == 4)
