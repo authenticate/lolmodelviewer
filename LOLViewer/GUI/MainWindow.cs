@@ -536,6 +536,9 @@ namespace LOLViewer.GUI
                 {
                     currentAnimationComboBox.SelectedIndex = 0;
                 }
+
+                // Update status bar text.
+                mainWindowStatusLabel.Text = "Viewing " + modelName + ".";
             }
 
             OnResetCameraButtonClick(sender, e);
