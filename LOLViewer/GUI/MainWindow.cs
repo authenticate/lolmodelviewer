@@ -314,6 +314,13 @@ namespace LOLViewer.GUI
         private void GLControlOnMouseMove(object sender, MouseEventArgs e)
         {
             camera.OnMouseMove(e);
+
+            // Send messages to the renderer to translate the model.
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                renderer.TranslateModel(e.X, e.Y, camera);
+            }
+
             GLControlMainOnUpdateFrame(sender, e);
         }
 
@@ -332,6 +339,13 @@ namespace LOLViewer.GUI
         private void GLControlOnMouseDown(object sender, MouseEventArgs e)
         {
             camera.OnMouseButtonDown(e);
+
+            // Send messages to the renderer to translate the model.
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                renderer.TranslateModel(e.X, e.Y, camera);
+            }
+
             GLControlMainOnUpdateFrame(sender, e);
         }
 
@@ -524,6 +538,7 @@ namespace LOLViewer.GUI
                 }
             }
 
+            OnResetCameraButtonClick(sender, e);
             GLControlMainOnUpdateFrame(sender, e);
         }
 
@@ -543,22 +558,7 @@ namespace LOLViewer.GUI
         //
         private void ModelScaleTrackbarOnScroll(object sender, EventArgs e)
         {
-            // Store old translation.
-            Vector3 translation = Vector3.Zero;
-            translation.X = renderer.world.M41;
-            translation.Y = renderer.world.M42;
-            translation.Z = renderer.world.M43;
-
-            // Create the scale.
-            Matrix4 world = Matrix4.Scale(modelScaleTrackbar.Value / DEFAULT_SCALE_TRACKBAR);
-            
-            // Reapply old translation.
-            world.M41 = translation.X;
-            world.M42 = translation.Y;
-            world.M43 = translation.Z;
-
-            // Store result
-            renderer.world = world;
+            renderer.ScaleModel(modelScaleTrackbar.Value / DEFAULT_SCALE_TRACKBAR);
 
             // Redraw.
             GLControlMainOnPaint(sender, null);
@@ -568,6 +568,7 @@ namespace LOLViewer.GUI
         private void OnResetCameraButtonClick(object sender, EventArgs e)
         {
             camera.Reset();
+            renderer.Reset();
 
             // Redraw.
             glControlMain.Invalidate();
@@ -577,15 +578,15 @@ namespace LOLViewer.GUI
         {
             ColorDialog colorDlg = new ColorDialog();
 
-            Color iniColor = Color.FromArgb( (int) (renderer.clearColor.A * 255),
-                (int) (renderer.clearColor.R * 255), (int) (renderer.clearColor.G * 255),
-                (int) (renderer.clearColor.B * 255) );
+            Color iniColor = Color.FromArgb( (int) (renderer.ClearColor.A * 255),
+                (int) (renderer.ClearColor.R * 255), (int) (renderer.ClearColor.G * 255),
+                (int) (renderer.ClearColor.B * 255) );
 
             colorDlg.Color = iniColor;
 
             if (colorDlg.ShowDialog() == DialogResult.OK)
             {
-                renderer.SetClearColor(colorDlg.Color);
+                renderer.ClearColor = colorDlg.Color;
 
                 glControlMain.Invalidate();
             }
