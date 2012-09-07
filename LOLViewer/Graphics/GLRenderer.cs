@@ -48,7 +48,20 @@ namespace LOLViewer.Graphics
     public class GLRenderer
     {
         // Renderer Variables
-        public OpenTK.Graphics.Color4 clearColor;
+        public OpenTK.Graphics.Color4 ClearColor 
+        {
+            get
+            {
+                return clearColor;
+            }
+
+            set
+            {
+                clearColor = value;
+                GL.ClearColor(clearColor);
+            }
+        }
+        private OpenTK.Graphics.Color4 clearColor = new OpenTK.Graphics.Color4(0.1f, 0.2f, 0.5f, 0);
 
         // Shader Variables
         private Dictionary<String, GLShaderProgram> programs;
@@ -62,9 +75,10 @@ namespace LOLViewer.Graphics
         // Texture Variables
         private Dictionary<String, GLTexture> textures;
 
-        public Matrix4 world;
+        private Matrix4 world;
         public const float DEFAULT_MODEL_SCALE = 0.11f;
-        public const int DEFAULT_MODEL_YOFFSET = -50;
+        // Can't actually declare as a const.
+        private Vector3 DEFAULT_MODEL_TRANSLATION = new Vector3(0, -50, 0);
 
         // Skinning Identities. Used when animation mode is disabled.
         public bool isSkinning;
@@ -72,8 +86,6 @@ namespace LOLViewer.Graphics
 
         public GLRenderer()
         {
-            clearColor = new OpenTK.Graphics.Color4(0.1f, 0.2f, 0.5f, 0.0f);
-
             programs = new Dictionary<String, GLShaderProgram>();
             shaders = new Dictionary<String, GLShader>();
             billboards = new Dictionary<String, GLBillboard>();
@@ -82,8 +94,8 @@ namespace LOLViewer.Graphics
             textures = new Dictionary<String, GLTexture>();
 
             isSkinning = false;
-            world = Matrix4.Scale(DEFAULT_MODEL_SCALE);
-            world.M42 = DEFAULT_MODEL_YOFFSET;
+
+            Reset();
 
             for (int i = 0; i < GLRig.MAX_BONES; ++i)
             {
@@ -346,22 +358,10 @@ namespace LOLViewer.Graphics
                 GL.FrontFace(FrontFaceDirection.Cw);
                 GL.CullFace(CullFaceMode.Back);
                 GL.Enable(EnableCap.CullFace);
-                SetClearColor(clearColor);
+                ClearColor = clearColor;
             }
 
             return result;
-        }
-
-        public void SetClearColor(OpenTK.Graphics.Color4 color)
-        {
-            clearColor = color;
-            GL.ClearColor(clearColor);
-        }
-
-        public void SetClearColor(System.Drawing.Color color)
-        {
-            clearColor = color;
-            GL.ClearColor(clearColor);
         }
 
         public bool LoadModel(LOLModel model, Logger logger)
@@ -390,9 +390,115 @@ namespace LOLViewer.Graphics
             return result;
         }
 
+        public void ScaleModel(float scale)
+        {
+            // Store old translation.
+            Vector3 translation = Vector3.Zero;
+            translation.X = world.M41;
+            translation.Y = world.M42;
+            translation.Z = world.M43;
+
+            // Create the scale.
+            world = Matrix4.Scale(scale);
+
+            // Reapply old translation.
+            world.M41 = translation.X;
+            world.M42 = translation.Y;
+            world.M43 = translation.Z;
+        }
+
+        /// <summary>
+        /// Translates the model in the plane perpendicular to the model's origin and the
+        /// camera's eye.
+        /// </summary>
+        /// <param name="x">The X mouse coordinate.</param>
+        /// <param name="y">The Y mouse coordinate.</param>
+        /// <param name="camera">The camera.</param>
+        public void TranslateModel(int x, int y, GLCamera camera)
+        {
+            // Invert the transformation pipeline.
+            Matrix4 inverseProjection = camera.Projection;
+            inverseProjection.Invert();
+
+            Matrix4 inverseView = camera.View;
+            inverseView.Invert();
+
+            // Transform mouse coordinates into world space.
+
+            // We are "mouse" space.  Need to convert into screen space.
+            Vector4 worldMouse = new Vector4(x, y, 1, 1);
+
+            int[] viewport = new int[4];
+            GL.GetInteger(GetPName.Viewport, viewport);
+
+            worldMouse.X = (2.0f * (worldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
+            worldMouse.Y = -((2.0f * (worldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
+            
+            // We are in screen space.  Need to convert into view space.
+            worldMouse = Vector4.Transform(worldMouse, inverseProjection);
+            
+            // We are in world space.  Need to convert into world space.
+            worldMouse = Vector4.Transform(worldMouse, inverseView);
+
+            if (worldMouse.W > float.Epsilon || worldMouse.W < float.Epsilon)
+            {
+                worldMouse.X /= worldMouse.W;
+                worldMouse.Y /= worldMouse.W;
+                worldMouse.Z /= worldMouse.W;
+            }
+
+            // There's a few places where we invert Z, specifically the worldMouse, planePoint, and the result.
+            // This is because the camera interally converts the handedness of the coordinate system to accout for Riot's model
+            // data being built for DirectX.  So, we need to account for that conversion in our calculations here.  This is actually
+            // really bad and hacky.  It would be better to rewrite the importers to convert the handedness there and never worry about it again.
+            worldMouse.Z = -worldMouse.Z;
+
+            // Get the world location of the model.  This is the point on the plane.
+            Vector3 planePoint = new Vector3(world.M41, world.M42, -world.M43);
+
+            // Get the camera eye.  This is the line origin.
+            Vector3 lineOrigin = camera.Eye;
+
+            // Create the normal of the plane.
+            Vector3 planeNormal = lineOrigin - planePoint;
+            planeNormal.Normalize();
+
+            // Create the direction of the line intersecting the plane.
+            Vector3 lineDirection = new Vector3(worldMouse);
+            lineDirection -= lineOrigin;
+            lineDirection.Normalize();
+
+            // Computes the distance along the line until it intersects the plane.
+            // Note: In pure math, there are three possible solutions.
+            //      1.) The line intersects the plane once.  Normal solution.
+            //      2.) The line is outside and parallel to the plane. Denom -> 0 -> Undefined solution.
+            //      3.) The line is contained inside the plane. Denom & Num -> 0 -> Indeterminate solution.
+            // However, in the scope of this problem, only solution 1.) is possible because of the constraints of the camera class.
+            // So, we assume nothing crazy can happen with this computation (which is probably a terrible assumption but oh well).
+            float distance = Vector3.Dot(planePoint - lineOrigin, planeNormal) / Vector3.Dot(lineDirection, planeNormal);
+
+            // Calculate the new model location.
+            Vector3 result = lineOrigin + lineDirection * distance;
+            result.Z = -result.Z;
+
+            // Store it.
+            world.M41 = result.X;
+            world.M42 = result.Y;
+            world.M43 = result.Z;
+        }
+
         public void OnResize(int x, int y, int width, int height)
         {
             GL.Viewport(x, y, width, height);
+        }
+
+        public void Reset()
+        {
+            world = Matrix4.Scale(DEFAULT_MODEL_SCALE);
+
+            world.M41 = DEFAULT_MODEL_TRANSLATION.X;
+            world.M42 = DEFAULT_MODEL_TRANSLATION.Y;
+            world.M43 = DEFAULT_MODEL_TRANSLATION.Z;
         }
 
         public void OnRender(ref GLCamera camera)
@@ -413,7 +519,7 @@ namespace LOLViewer.Graphics
             GL.DepthFunc(DepthFunction.Less);
 
             GLShaderProgram program = null;
-            
+
             //
             // Load shaders for Phong lit static models.
             //
@@ -425,13 +531,13 @@ namespace LOLViewer.Graphics
 
                 //
                 // Update parameters for phong lighting.
-                //
+                //                
 
                 // Vertex Shader Uniforms
                 program.UpdateUniform("u_WorldView",
-                    world * camera.view);
+                    world * camera.View);
                 program.UpdateUniform("u_WorldViewProjection",
-                    world * camera.view * camera.projection);
+                    world * camera.View * camera.Projection);
 
                 // Fragment Shader Uniforms
                 program.UpdateUniform("u_LightDirection", new Vector3(0.0f, 0.0f, 1.0f));
@@ -550,20 +656,20 @@ namespace LOLViewer.Graphics
                 Matrix4 worldView = Matrix4.Identity;
                 if (isSkinning == true)
                 {
-                    worldView = world * camera.view;
+                    worldView = world * camera.View;
                 }
                 else
                 {
                     // Account for the skinning scale if we're not skinning.
                     Matrix4 scale = Matrix4.Scale(rModels.First().Value.rig.bindingJoints[0].scale); //hacky
-                    worldView = scale * world * camera.view;
+                    worldView = scale * world * camera.View;
                 }
 
                 // Vertex Shader Uniforms
                 program.UpdateUniform("u_WorldView",
                     worldView);
                 program.UpdateUniform("u_WorldViewProjection",
-                    worldView * camera.projection);
+                    worldView * camera.Projection);
 
                 r.Value.Draw();
             }

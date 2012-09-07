@@ -59,9 +59,13 @@ namespace LOLViewer.Graphics
 
         // View / Projection Parameters
         private float fov, aspect, near, far;
-        private Vector3 eye, target;
-        public Vector3 defaultEye, defaultTarget;
-        public Matrix4 view, projection;
+        private Vector3 defaultEye, defaultTarget;
+
+        public Vector3 Eye { get; set; }
+        public Vector3 Target { get; set; }
+
+        public Matrix4 View { get; set; }
+        public Matrix4 Projection { get; set; }
 
         // We need to account for the fact that OpenGL does not have
         // the same handedness as DirectX.  So, we compute everything 
@@ -90,11 +94,11 @@ namespace LOLViewer.Graphics
         {
             fov = aspect = near = far = 0.0f;
 
-            eye = defaultEye = Vector3.Zero;
-            target = defaultTarget = Vector3.Zero;
+            Eye = defaultEye = Vector3.Zero;
+            Target = defaultTarget = Vector3.Zero;
 
-            view        = Matrix4.Identity;
-            projection  = Matrix4.Identity;
+            View        = Matrix4.Identity;
+            Projection  = Matrix4.Identity;
             handConverter = Matrix4.Identity;
             handConverter.M33 = -handConverter.M33;
 
@@ -233,11 +237,11 @@ namespace LOLViewer.Graphics
                         invCamRotation);
 
             // Update the camera's eye.
-            eye = target - (worldAhead * radius);
+            Eye = Target - (worldAhead * radius);
 
             // Update view.
-            view = Matrix4.LookAt(eye, target, worldUp);
-            view = handConverter * view;
+            View = Matrix4.LookAt(Eye, Target, worldUp);
+            View = handConverter * View;
 
             // After a drag has finished
             if (updateLastRotation == true)
@@ -257,13 +261,13 @@ namespace LOLViewer.Graphics
         public void SetViewParameters(Vector3 eye, Vector3 target)
         {
             // Store parameters
-            this.eye = this.defaultEye = eye;
-            this.target = this.defaultTarget = target;
+            this.Eye = this.defaultEye = eye;
+            this.Target = this.defaultTarget = target;
 
             // Update view matrix.
             Matrix4 rotation = Matrix4.LookAt(eye, target, new Vector3(0.0f, 1.0f, 0.0f));
-            view = rotation;
-            view = handConverter * view;
+            View = rotation;
+            View = handConverter * View;
 
             // Update arc ball.
             Quaternion quat = OpenTKExtras.Matrix4.CreateQuatFromMatrix(rotation);
@@ -292,7 +296,7 @@ namespace LOLViewer.Graphics
             this.far = far;
 
             // Update projection matrix.
-            projection = Matrix4.CreatePerspectiveFieldOfView(fov, aspect, near, far);
+            Projection = Matrix4.CreatePerspectiveFieldOfView(fov, aspect, near, far);
 
             // Update arc ball.
             viewArcBall.SetWindow(width, height);
@@ -304,8 +308,8 @@ namespace LOLViewer.Graphics
 
         public void Reset()
         {
-            eye = defaultEye;
-            target = defaultTarget;
+            Eye = defaultEye;
+            Target = defaultTarget;
 
             radius = defaultRadius;
             viewArcBall.Reset();
