@@ -305,13 +305,36 @@ namespace LOLViewer.IO
                             break;
 
                         case "animations.list":
-                            // Remove the file name.
-                            name = e.FileName.Remove(e.FileName.LastIndexOf('/'));
+                            // Riot changed their directory structure for some skins.
+                            // Originally, champion Animation.list files were stored in a directory structure like
+                            // "*/ChampionName/Animation.list".  Now, some are stored like
+                            // "*/ChampionName/Skins/Skin01/Animation.list".
 
-                            // Remove proceeding directories to get the parent directory
-                            name = name.Substring(name.LastIndexOf('/') + 1).ToLower();
+                            if (e.FileName.ToLower().Contains("skin") == false &&
+                                e.FileName.ToLower().Contains("base") == false)
+                            {
+                                // Original Case.
 
-                            // Name is the parent directory.
+                                // Remove the file name.
+                                name = e.FileName.Remove(e.FileName.LastIndexOf('/'));
+
+                                // Remove proceeding directories to get the parent directory
+                                name = name.Substring(name.LastIndexOf('/') + 1).ToLower();
+                            }
+                            else
+                            {
+                                // Newer Case.
+                                string path = e.FileName.ToString();
+                                string[] splitPath = path.Split('/');
+
+                                // Sanity
+                                if (splitPath.Length > 3)
+                                {
+                                    name = splitPath[splitPath.Length - 4].ToLower();
+                                }
+                            }
+
+                            // Store.
                             if (!animationLists.ContainsKey(name))
                             {
                                 animationLists.Add(name, e);
@@ -366,16 +389,23 @@ namespace LOLViewer.IO
                         // Name the model after the parent directory
                         // of the .inibin plus the name from the .inibin.
                         // Some things overlap without both.
-                        String name = modelDefs[j].name;
 
-                        String directoryName = f.FileName;
-                        int pos = directoryName.LastIndexOf("/");
-                        directoryName = directoryName.Remove(pos);
-                        pos = directoryName.LastIndexOf("/");
-                        directoryName = directoryName.Substring(pos + 1);
+                        string path = f.FileName;
+                        string[] splitPath = path.Split('/');
+
+                        string directoryName = splitPath[splitPath.Length - 2];
+                        if (directoryName.Contains("Base") == true ||
+                            directoryName.Contains("Skin") == true)
+                        {
+                            // The directory structure for this case will be something like
+                            // "*/ChampionName/Skins/Base/".
+                            // We just want the "ChampionName".
+                            directoryName = splitPath[splitPath.Length - 4];
+                        }
 
                         // Sometimes the name from the .inibin file is "".
                         // So, just name it after the directory
+                        String name = modelDefs[j].name;
                         if (name == "")
                         {
                             name = directoryName + "/" + directoryName;
