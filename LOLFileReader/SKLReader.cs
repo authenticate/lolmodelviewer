@@ -72,7 +72,7 @@ namespace LOLFileReader
 
             try
             {
-                BinaryReader myFile = new BinaryReader(input);
+                BinaryReader myFile = new BinaryReader(input, Encoding.ASCII);
                 result = ReadData(myFile, ref data, logger);
                 myFile.Close();
             }
