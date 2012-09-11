@@ -76,6 +76,7 @@ namespace LOLViewer.Graphics
         private Dictionary<String, GLTexture> textures;
 
         private Matrix4 world;
+        private Vector3 modelTranslation;
         public const float DEFAULT_MODEL_SCALE = 0.11f;
         // Can't actually declare as a const.
         private Vector3 DEFAULT_MODEL_TRANSLATION = new Vector3(0, -50, 0);
@@ -441,8 +442,21 @@ namespace LOLViewer.Graphics
                 worldMouse.Z /= worldMouse.W;
             }
 
+            // The model translation is applied in VIEW space.  So, we need to project it back
+            // into world space for these calculations.  We need to remove the translation components of the view
+            // matrix.
+
+            Matrix4 viewRotation = camera.View;
+            viewRotation.M41 = 0;
+            viewRotation.M42 = 0;
+            viewRotation.M43 = 0;
+
+            Matrix4 inverseViewRotation = Matrix4.Invert(viewRotation);
+
+            Vector3 worldModelTranslation = Vector3.Transform(modelTranslation, inverseViewRotation);
+
             // Get the world location of the model.  This is the point on the plane.
-            Vector3 planePoint = new Vector3(world.M41, world.M42, world.M43);
+            Vector3 planePoint = worldModelTranslation;
 
             // Get the camera eye.  This is the line origin.
             Vector3 lineOrigin = camera.Eye;
@@ -474,10 +488,11 @@ namespace LOLViewer.Graphics
             // Calculate the new model location.
             Vector3 result = lineOrigin + lineDirection * distance;
 
+            // Convert back into view space.
+            result = Vector3.Transform(result, viewRotation);
+
             // Store it.
-            world.M41 = result.X;
-            world.M42 = result.Y;
-            world.M43 = result.Z;
+            modelTranslation = result;
         }
 
         public void OnResize(int x, int y, int width, int height)
@@ -492,6 +507,8 @@ namespace LOLViewer.Graphics
             world.M41 = DEFAULT_MODEL_TRANSLATION.X;
             world.M42 = DEFAULT_MODEL_TRANSLATION.Y;
             world.M43 = DEFAULT_MODEL_TRANSLATION.Z;
+
+            modelTranslation = Vector3.Zero;
         }
 
         public void OnRender(ref GLCamera camera)
@@ -513,6 +530,13 @@ namespace LOLViewer.Graphics
 
             GLShaderProgram program = null;
 
+            // Add the translation in view space.  This allows the model to rotate around
+            // itself instead of the origin in world space.
+            Matrix4 view = camera.View;
+            view.M41 += modelTranslation.X;
+            view.M42 += modelTranslation.Y;
+            view.M43 += modelTranslation.Z;
+
             //
             // Load shaders for Phong lit static models.
             //
@@ -528,9 +552,9 @@ namespace LOLViewer.Graphics
 
                 // Vertex Shader Uniforms
                 program.UpdateUniform("u_WorldView",
-                    world * camera.View);
+                    world * view);
                 program.UpdateUniform("u_WorldViewProjection",
-                    world * camera.View * camera.Projection);
+                    world * view * camera.Projection);
 
                 // Fragment Shader Uniforms
                 program.UpdateUniform("u_LightDirection", new Vector3(0.0f, 0.0f, 1.0f));
@@ -649,13 +673,13 @@ namespace LOLViewer.Graphics
                 Matrix4 worldView = Matrix4.Identity;
                 if (isSkinning == true)
                 {
-                    worldView = world * camera.View;
+                    worldView = world * view;
                 }
                 else
                 {
                     // Account for the skinning scale if we're not skinning.
                     Matrix4 scale = Matrix4.Scale(rModels.First().Value.rig.bindingJoints[0].scale); //hacky
-                    worldView = scale * world * camera.View;
+                    worldView = scale * world * view;
                 }
 
                 // Vertex Shader Uniforms
