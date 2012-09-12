@@ -60,18 +60,24 @@ namespace LOLViewer.Graphics
 
         public bool Create(SKNFile file, Logger logger)
         {
+            // This function converts the handedness of the DirectX style input data
+            // into the handedness OpenGL expects.
+            // So, vector inputs have their Z value negated and quaternion inputs have their
+            // Z and W values negated.
+
             List<float> vertexPositions = new List<float>();
             List<float> vertexNormals = new List<float>();
             List<float> vertexTextureCoordinates = new List<float>();
+
             for (int i = 0; i < file.numVertices; ++i)
             {
                 vertexPositions.Add(file.vertices[i].position[0]);
                 vertexPositions.Add(file.vertices[i].position[1]);
-                vertexPositions.Add(file.vertices[i].position[2]);
+                vertexPositions.Add(-file.vertices[i].position[2]);
 
                 vertexNormals.Add(file.vertices[i].normal[0]);
                 vertexNormals.Add(file.vertices[i].normal[1]);
-                vertexNormals.Add(file.vertices[i].normal[2]);
+                vertexNormals.Add(-file.vertices[i].normal[2]);
 
                 vertexTextureCoordinates.Add(file.vertices[i].texCoords[0]);
                 vertexTextureCoordinates.Add(file.vertices[i].texCoords[1]);

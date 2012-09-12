@@ -67,13 +67,6 @@ namespace LOLViewer.Graphics
         public Matrix4 View { get; set; }
         public Matrix4 Projection { get; set; }
 
-        // We need to account for the fact that OpenGL does not have
-        // the same handedness as DirectX.  So, we compute everything 
-        // left handed as a DirectX pipeline would.  Then, at the very last step,
-        // we multiply in the conversion into the view matrix.  This will convert
-        // the data to a right handed system.
-        private Matrix4 handConverter;
-
         private Dictionary<CameraKeyValues, bool> keyState;
 
         private Dictionary<MouseButtons, bool> mouseState;
@@ -99,8 +92,6 @@ namespace LOLViewer.Graphics
 
             View        = Matrix4.Identity;
             Projection  = Matrix4.Identity;
-            handConverter = Matrix4.Identity;
-            handConverter.M33 = -handConverter.M33;
 
             // Default Keybindings
             bindings = new Dictionary<Keys, CameraKeyValues>();
@@ -241,7 +232,6 @@ namespace LOLViewer.Graphics
 
             // Update view.
             View = Matrix4.LookAt(Eye, Target, worldUp);
-            View = handConverter * View;
 
             // After a drag has finished
             if (updateLastRotation == true)
@@ -267,7 +257,6 @@ namespace LOLViewer.Graphics
             // Update view matrix.
             Matrix4 rotation = Matrix4.LookAt(eye, target, new Vector3(0.0f, 1.0f, 0.0f));
             View = rotation;
-            View = handConverter * View;
 
             // Update arc ball.
             Quaternion quat = OpenTKExtras.Matrix4.CreateQuatFromMatrix(rotation);

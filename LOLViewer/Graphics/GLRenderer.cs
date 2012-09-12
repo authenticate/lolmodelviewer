@@ -461,12 +461,6 @@ namespace LOLViewer.Graphics
             // Get the camera eye.  This is the line origin.
             Vector3 lineOrigin = camera.Eye;
 
-            // We need to invert the Z value.
-            // This is because the camera internally converts the handedness of the coordinate system to accout for Riot's model
-            // data being built for DirectX.  So, we need to remove  that conversion in our calculations here.  This is actually
-            // really bad and hacky.  It would be better to rewrite the importers to convert the handedness there and never worry about it again.
-            lineOrigin.Z = -lineOrigin.Z;
-
             // Create the normal of the plane.
             Vector3 planeNormal = lineOrigin - planePoint;
             planeNormal.Normalize();
