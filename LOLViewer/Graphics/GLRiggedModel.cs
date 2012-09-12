@@ -94,6 +94,11 @@ namespace LOLViewer.Graphics
         {
             bool result = true;
 
+            // This function converts the handedness of the DirectX style input data
+            // into the handedness OpenGL expects.
+            // So, vector inputs have their Z value negated and quaternion inputs have their
+            // Z and W values negated.
+
             // Vertex Data
             List<float> vertexPositions = new List<float>();
             List<float> vertexNormals = new List<float>();
@@ -101,7 +106,7 @@ namespace LOLViewer.Graphics
             List<float> vertexBoneIndices = new List<float>();
             List<float> vertexBoneWeights = new List<float>();
 
-            // Other data.
+            // Animation data.
             List<OpenTK.Quaternion> boneOrientations = new List<OpenTK.Quaternion>();
             List<OpenTK.Vector3> bonePositions = new List<OpenTK.Vector3>();
             List<String> boneNames = new List<String>();
@@ -113,12 +118,12 @@ namespace LOLViewer.Graphics
                 // Position Information
                 vertexPositions.Add(skn.vertices[i].position[0]);
                 vertexPositions.Add(skn.vertices[i].position[1]);
-                vertexPositions.Add(skn.vertices[i].position[2]);
+                vertexPositions.Add(-skn.vertices[i].position[2]);
 
                 // Normal Information
                 vertexNormals.Add(skn.vertices[i].normal[0]);
                 vertexNormals.Add(skn.vertices[i].normal[1]);
-                vertexNormals.Add(skn.vertices[i].normal[2]);
+                vertexNormals.Add(-skn.vertices[i].normal[2]);
 
                 // Tex Coords Information
                 vertexTextureCoordinates.Add(skn.vertices[i].texCoords[0]);
@@ -137,7 +142,7 @@ namespace LOLViewer.Graphics
                 vertexBoneWeights.Add(skn.vertices[i].weights[3]);
             }
 
-            // Other data
+            // Animation data
             for (int i = 0; i < skl.numBones; ++i)
             {
                 Quaternion orientation = Quaternion.Identity;
@@ -146,8 +151,8 @@ namespace LOLViewer.Graphics
                     // Version 0 SKLs contain a quaternion.
                     orientation.X = skl.bones[i].orientation[0];
                     orientation.Y = skl.bones[i].orientation[1];
-                    orientation.Z = skl.bones[i].orientation[2];
-                    orientation.W = skl.bones[i].orientation[3];
+                    orientation.Z = -skl.bones[i].orientation[2];
+                    orientation.W = -skl.bones[i].orientation[3];
                 }
                 else
                 {
@@ -170,6 +175,8 @@ namespace LOLViewer.Graphics
 
                     // Convert the matrix to a quaternion.
                     orientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(transform);
+                    orientation.Z = -orientation.Z;
+                    orientation.W = -orientation.W;
                 }
 
                 boneOrientations.Add(orientation);
@@ -178,7 +185,7 @@ namespace LOLViewer.Graphics
                 Vector3 position = Vector3.Zero;
                 position.X = skl.bones[i].position[0];
                 position.Y = skl.bones[i].position[1];
-                position.Z = skl.bones[i].position[2];
+                position.Z = -skl.bones[i].position[2];
                 bonePositions.Add(position);
 
                 boneNames.Add(skl.bones[i].name);
@@ -623,12 +630,12 @@ namespace LOLViewer.Graphics
                         GLFrame glFrame = new GLFrame();
                         glFrame.position.X = frame.position[0];
                         glFrame.position.Y = frame.position[1];
-                        glFrame.position.Z = frame.position[2];
+                        glFrame.position.Z = -frame.position[2];
 
                         glFrame.orientation.X = frame.orientation[0];
                         glFrame.orientation.Y = frame.orientation[1];
-                        glFrame.orientation.Z = frame.orientation[2];
-                        glFrame.orientation.W = frame.orientation[3];
+                        glFrame.orientation.Z = -frame.orientation[2];
+                        glFrame.orientation.W = -frame.orientation[3];
 
                         glBone.frames.Add(glFrame);
                     }
