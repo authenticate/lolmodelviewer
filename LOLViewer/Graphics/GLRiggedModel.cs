@@ -104,7 +104,7 @@ namespace LOLViewer.Graphics
             // Other data.
             List<OpenTK.Quaternion> boneOrientations = new List<OpenTK.Quaternion>();
             List<OpenTK.Vector3> bonePositions = new List<OpenTK.Vector3>();
-            List<String> boneNormals = new List<String>();
+            List<String> boneNames = new List<String>();
             List<float> boneScales = new List<float>();
             List<int> boneParents = new List<int>();
 
@@ -181,7 +181,7 @@ namespace LOLViewer.Graphics
                 position.Z = skl.bones[i].position[2];
                 bonePositions.Add(position);
 
-                boneNormals.Add(skl.bones[i].name);
+                boneNames.Add(skl.bones[i].name);
                 boneScales.Add(skl.bones[i].scale);
                 boneParents.Add(skl.bones[i].parentID);
             }
@@ -233,13 +233,13 @@ namespace LOLViewer.Graphics
             {
                 result = Create((int)skl.version, vertexPositions, vertexNormals, vertexTextureCoordinates,
                     vertexBoneIndices, vertexBoneWeights, indices, boneOrientations, bonePositions,
-                    boneScales, boneNormals, boneParents, logger);
+                    boneScales, boneNames, boneParents, logger);
             }
             else
             {
                 result = Create((int)skl.version, vertexPositions, vertexNormals, vertexTextureCoordinates,
                     vertexBoneIndices, vertexBoneWeights, indices, boneOrientations, bonePositions,
-                    boneScales, boneNormals, boneParents, skl.boneIDs, logger);
+                    boneScales, boneNames, boneParents, skl.boneIDs, logger);
             }
 
             return result;
