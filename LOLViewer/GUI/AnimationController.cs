@@ -127,7 +127,7 @@ namespace LOLViewer.GUI
 
             if (currentAnimation.Length > 0)
             {
-                renderer.SetAnimations(currentAnimation);
+                renderer.SetCurrentAnimation(currentAnimation);
 
                 UpdateTimelineTrackBar();
 
