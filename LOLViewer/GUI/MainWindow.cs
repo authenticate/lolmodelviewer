@@ -525,7 +525,7 @@ namespace LOLViewer.GUI
                 bool result = renderer.LoadModel(model, logger);
 
                 currentAnimationComboBox.Items.Clear();
-                foreach (String name in renderer.GetAnimationsInCurrentModel())
+                foreach (String name in renderer.GetAnimations())
                 {
                     currentAnimationComboBox.Items.Add(name);
                 }
