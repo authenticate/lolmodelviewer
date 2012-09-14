@@ -108,7 +108,12 @@ namespace LOLViewer.Graphics
             }
         }
 
-        public bool OnLoad(Logger logger)
+        /// <summary>
+        /// Sets up OpenGL.  Calls this before the other functions.
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <returns></returns>
+        public bool Initialize(Logger logger)
         {
             bool result = true;
 
@@ -371,147 +376,13 @@ namespace LOLViewer.Graphics
 
         #endregion
 
-        public bool LoadModel(LOLModel model, Logger logger)
-        {
-            bool result = true;
-
-            DestroyCurrentModels();
-
-            //
-            // Create model geometry
-            //
-
-            // If the model definition does not contain .skl files,
-            // then it's a static model.
-            if (model.skl == null &&
-                result == true)
-            {
-                result = CreateStaticModel(model, logger);
-            }
-            // It's a rigged model
-            else
-            {
-                result = CreateRiggedModel(model, logger);
-            }
-
-            return result;
-        }
-
-        public void ScaleModel(float scale)
-        {
-            // Store old translation.
-            Vector3 translation = Vector3.Zero;
-            translation.X = world.M41;
-            translation.Y = world.M42;
-            translation.Z = world.M43;
-
-            // Create the scale.
-            world = Matrix4.Scale(scale);
-
-            // Reapply old translation.
-            world.M41 = translation.X;
-            world.M42 = translation.Y;
-            world.M43 = translation.Z;
-        }
+        #region Renderer API
 
         /// <summary>
-        /// Translates the model in the plane perpendicular to the model's origin and the
-        /// camera's eye.
+        /// Draws the scene.
         /// </summary>
-        /// <param name="x">The X mouse coordinate.</param>
-        /// <param name="y">The Y mouse coordinate.</param>
-        /// <param name="camera">The camera.</param>
-        public void TranslateModel(int x, int y, GLCamera camera)
-        {
-            // Invert the transformation pipeline.
-            Matrix4 inverseProjectionView = camera.View * camera.Projection;
-            inverseProjectionView.Invert();
-
-            // Transform mouse coordinates into world space.
-
-            // We are "mouse" space.  Need to convert into screen space.
-            Vector4 worldMouse = new Vector4(x, y, 1, 1);
-
-            int[] viewport = new int[4];
-            GL.GetInteger(GetPName.Viewport, viewport);
-
-            worldMouse.X = (2.0f * (worldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
-            worldMouse.Y = -((2.0f * (worldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
-            
-            // We are in screen space.  Need to convert into view space and then world space.
-            worldMouse = Vector4.Transform(worldMouse, inverseProjectionView);
-
-            if (worldMouse.W > float.Epsilon || worldMouse.W < float.Epsilon)
-            {
-                worldMouse.X /= worldMouse.W;
-                worldMouse.Y /= worldMouse.W;
-                worldMouse.Z /= worldMouse.W;
-            }
-
-            // The model translation is applied in VIEW space.  So, we need to project it back
-            // into world space for these calculations.  We need to remove the translation components of the view
-            // matrix.
-
-            Matrix4 viewRotation = camera.View;
-            viewRotation.M41 = 0;
-            viewRotation.M42 = 0;
-            viewRotation.M43 = 0;
-
-            Matrix4 inverseViewRotation = Matrix4.Invert(viewRotation);
-
-            Vector3 worldModelTranslation = Vector3.Transform(modelTranslation, inverseViewRotation);
-
-            // Get the world location of the model.  This is the point on the plane.
-            Vector3 planePoint = worldModelTranslation;
-
-            // Get the camera eye.  This is the line origin.
-            Vector3 lineOrigin = camera.Eye;
-
-            // Create the normal of the plane.
-            Vector3 planeNormal = lineOrigin - planePoint;
-            planeNormal.Normalize();
-
-            // Create the direction of the line intersecting the plane.
-            Vector3 lineDirection = new Vector3(worldMouse);
-            lineDirection -= lineOrigin;
-            lineDirection.Normalize();
-
-            // Computes the distance along the line until it intersects the plane.
-            // Note: In pure math, there are three possible solutions.
-            //      1.) The line intersects the plane once.  Normal solution.
-            //      2.) The line is outside and parallel to the plane. Denom -> 0 -> Undefined solution.
-            //      3.) The line is contained inside the plane. Denom & Num -> 0 -> Indeterminate solution.
-            // However, in the scope of this problem, only solution 1.) is possible because of the constraints of the camera class.
-            // So, we assume nothing crazy can happen with this computation (which is probably a terrible assumption but oh well).
-            float distance = Vector3.Dot(planePoint - lineOrigin, planeNormal) / Vector3.Dot(lineDirection, planeNormal);
-
-            // Calculate the new model location.
-            Vector3 result = lineOrigin + lineDirection * distance;
-
-            // Convert back into view space.
-            result = Vector3.Transform(result, viewRotation);
-
-            // Store it.
-            modelTranslation = result;
-        }
-
-        public void OnResize(int x, int y, int width, int height)
-        {
-            GL.Viewport(x, y, width, height);
-        }
-
-        public void Reset()
-        {
-            world = Matrix4.Scale(DEFAULT_MODEL_SCALE);
-
-            world.M41 = DEFAULT_MODEL_TRANSLATION.X;
-            world.M42 = DEFAULT_MODEL_TRANSLATION.Y;
-            world.M43 = DEFAULT_MODEL_TRANSLATION.Z;
-
-            modelTranslation = Vector3.Zero;
-        }
-
-        public void OnRender(ref GLCamera camera)
+        /// <param name="camera">The camera for the scene.</param>
+        public void Render(GLCamera camera)
         {
             //
             // TODO: Refactor/clean up this render loop.
@@ -522,7 +393,7 @@ namespace LOLViewer.Graphics
 
             // Clear back buffers.
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
-            
+
             // Enable a normal depth test without stenciling.
             GL.Enable(EnableCap.DepthTest);
             GL.Disable(EnableCap.StencilTest);
@@ -615,7 +486,7 @@ namespace LOLViewer.Graphics
             // Bone Transforms
             //
 
-                
+
             if (isSkinning == true)
             {
                 Matrix4[] transforms = riggedModel.GetBoneTransformations();
@@ -636,9 +507,9 @@ namespace LOLViewer.Graphics
 
                     // Perserve world space transforms between skinning and non skinning.
                     transforms = new Matrix4[GLRig.MAX_BONES];
-                    for ( int i = 0; i < GLRig.MAX_BONES; ++i )
+                    for (int i = 0; i < GLRig.MAX_BONES; ++i)
                     {
-                        transforms[i] = Matrix4.Scale(1.0f / 
+                        transforms[i] = Matrix4.Scale(1.0f /
                             riggedModel.rig.bindingJoints[0].scale); //hacky
                     }
 
@@ -679,72 +550,50 @@ namespace LOLViewer.Graphics
                 worldView * camera.Projection);
 
             riggedModel.Draw();
-          
+
             // Unload shaders.
-            GL.UseProgram( 0 );
+            GL.UseProgram(0);
         }
 
-        public void SetCurrentFrameInCurrentAnimation(int frame, float percentTowardsNextFrame)
-        {
-            riggedModel.SetCurrentFrame(frame, percentTowardsNextFrame);
-        }
-
-        public float GetCurrentAnimationPercentageAnimated()
-        {
-            float result = 0.0f;
-
-            result = riggedModel.GetPercentageAnimated();
-
-            return result;
-        }
-
-        public void SetCurrentAnimation(String animation)
-        {
-            riggedModel.SetCurrentAnimation(animation);
-        }
-
-        public uint GetNumberOfFramesInCurrentAnimation()
-        {
-            uint result = 0;
-
-            result = riggedModel.GetNumberOfFramesInCurrentAnimation();
-
-            return result;
-        }
-
-        public List<String> GetAnimations()
-        {
-            List<String> result = new List<String>();
-
-            foreach (var animation in riggedModel.animations)
-            {
-                result.Add(animation.Key);
-            }
-
-            return result;
-        }
-
-        public void OnUpdate(float elapsedTime)
+        /// <summary>
+        /// Updates the animation.
+        /// </summary>
+        /// <param name="elapsedTime">The time since the last frame.</param>
+        public void Update(float elapsedTime)
         {
             riggedModel.Update(elapsedTime);
         }
 
-        public void DestroyCurrentModels()
+        /// <summary>
+        /// Resizes the viewport.  Call this when the control resizes.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="width">The width of the control.</param>
+        /// <param name="height">The height of the control.</param>
+        public void Resize(int x, int y, int width, int height)
         {
-            // Clear out old model data.
-            staticModel.Destory();
-            riggedModel.Destroy();
-
-            GL.BindTexture(TextureTarget.Texture2D, 0);
-            foreach (var t in textures)
-            {
-                t.Value.Destroy();
-            }
-            textures.Clear();
-            // End Clearing
+            GL.Viewport(x, y, width, height);
         }
 
-        public void ShutDown()
+        /// <summary>
+        /// Resets the location of the model to its default position.
+        /// </summary>
+        public void Reset()
+        {
+            world = Matrix4.Scale(DEFAULT_MODEL_SCALE);
+
+            world.M41 = DEFAULT_MODEL_TRANSLATION.X;
+            world.M42 = DEFAULT_MODEL_TRANSLATION.Y;
+            world.M43 = DEFAULT_MODEL_TRANSLATION.Z;
+
+            modelTranslation = Vector3.Zero;
+        }
+
+        /// <summary>
+        /// Call before finalizing the memory of the renderer.
+        /// </summary>
+        public void Shutdown()
         {
             // Clean up shaders
             GL.UseProgram(0);
@@ -773,6 +622,229 @@ namespace LOLViewer.Graphics
             }
             textures.Clear();
         }
+
+        #endregion
+
+        #region Animation API
+
+        /// <summary>
+        /// Sets the animation to be displayed.
+        /// </summary>
+        /// <param name="animation">The animation name.</param>
+        public void SetCurrentAnimation(String animation)
+        {
+            riggedModel.SetCurrentAnimation(animation);
+        }
+
+        /// <summary>
+        /// Returns a list of animation names.
+        /// </summary>
+        /// <returns></returns>
+        public List<String> GetAnimations()
+        {
+            List<String> result = new List<String>();
+
+            foreach (var animation in riggedModel.animations)
+            {
+                result.Add(animation.Key);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Sets the current frame in the animation.
+        /// </summary>
+        /// <param name="frame">The frame number.</param>
+        /// <param name="percentTowardsNextFrame">The percent til the next frame is shown. Expects a value between 0 and 1.</param>
+        public void SetFrameInCurrentAnimation(int frame, float percentTowardsNextFrame)
+        {
+            riggedModel.SetCurrentFrame(frame, percentTowardsNextFrame);
+        }
+
+        /// <summary>
+        /// Gets the total number of frames in the animation.
+        /// </summary>
+        /// <returns></returns>
+        public uint GetNumberOfFramesInCurrentAnimation()
+        {
+            uint result = 0;
+
+            result = riggedModel.GetNumberOfFramesInCurrentAnimation();
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the percentage of the animation completed.
+        /// </summary>
+        /// <returns>Current Frame / Total Number of Frames</returns>
+        public float GetPercentAnimated()
+        {
+            float result = 0.0f;
+
+            result = riggedModel.GetPercentageAnimated();
+
+            return result;
+        }
+
+        #endregion
+
+        #region Model API
+
+        /// <summary>
+        /// Loads a model into the renderer.
+        /// </summary>
+        /// <param name="model">The model to load.</param>
+        /// <param name="logger"></param>
+        /// <returns></returns>
+        public bool LoadModel(LOLModel model, Logger logger)
+        {
+            bool result = true;
+
+            DestroyModel();
+
+            //
+            // Create model geometry
+            //
+
+            // If the model definition does not contain .skl files,
+            // then it's a static model.
+            if (model.skl == null &&
+                result == true)
+            {
+                result = CreateStaticModel(model, logger);
+            }
+            // It's a rigged model
+            else
+            {
+                result = CreateRiggedModel(model, logger);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes the model from the renderer.
+        /// </summary>
+        public void DestroyModel()
+        {
+            // Clear out old model data.
+            staticModel.Destory();
+            riggedModel.Destroy();
+
+            GL.BindTexture(TextureTarget.Texture2D, 0);
+            foreach (var t in textures)
+            {
+                t.Value.Destroy();
+            }
+            textures.Clear();
+            // End Clearing
+        }
+
+        /// <summary>
+        /// Set the scale of the model.
+        /// </summary>
+        /// <param name="scale">The scale of the model between 0 and 1.</param>
+        public void ScaleModel(float scale)
+        {
+            // Store old translation.
+            Vector3 translation = Vector3.Zero;
+            translation.X = world.M41;
+            translation.Y = world.M42;
+            translation.Z = world.M43;
+
+            // Create the scale.
+            world = Matrix4.Scale(scale);
+
+            // Reapply old translation.
+            world.M41 = translation.X;
+            world.M42 = translation.Y;
+            world.M43 = translation.Z;
+        }
+
+        /// <summary>
+        /// Translates the model in the plane perpendicular to the model's origin and the
+        /// camera's eye.
+        /// </summary>
+        /// <param name="x">The X mouse coordinate.</param>
+        /// <param name="y">The Y mouse coordinate.</param>
+        /// <param name="camera">The camera.</param>
+        public void TranslateModel(int x, int y, GLCamera camera)
+        {
+            // Invert the transformation pipeline.
+            Matrix4 inverseProjectionView = camera.View * camera.Projection;
+            inverseProjectionView.Invert();
+
+            // Transform mouse coordinates into world space.
+
+            // We are "mouse" space.  Need to convert into screen space.
+            Vector4 worldMouse = new Vector4(x, y, 1, 1);
+
+            int[] viewport = new int[4];
+            GL.GetInteger(GetPName.Viewport, viewport);
+
+            worldMouse.X = (2.0f * (worldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
+            worldMouse.Y = -((2.0f * (worldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
+
+            // We are in screen space.  Need to convert into view space and then world space.
+            worldMouse = Vector4.Transform(worldMouse, inverseProjectionView);
+
+            if (worldMouse.W > float.Epsilon || worldMouse.W < float.Epsilon)
+            {
+                worldMouse.X /= worldMouse.W;
+                worldMouse.Y /= worldMouse.W;
+                worldMouse.Z /= worldMouse.W;
+            }
+
+            // The model translation is applied in VIEW space.  So, we need to project it back
+            // into world space for these calculations.  We need to remove the translation components of the view
+            // matrix.
+
+            Matrix4 viewRotation = camera.View;
+            viewRotation.M41 = 0;
+            viewRotation.M42 = 0;
+            viewRotation.M43 = 0;
+
+            Matrix4 inverseViewRotation = Matrix4.Invert(viewRotation);
+
+            Vector3 worldModelTranslation = Vector3.Transform(modelTranslation, inverseViewRotation);
+
+            // Get the world location of the model.  This is the point on the plane.
+            Vector3 planePoint = worldModelTranslation;
+
+            // Get the camera eye.  This is the line origin.
+            Vector3 lineOrigin = camera.Eye;
+
+            // Create the normal of the plane.
+            Vector3 planeNormal = lineOrigin - planePoint;
+            planeNormal.Normalize();
+
+            // Create the direction of the line intersecting the plane.
+            Vector3 lineDirection = new Vector3(worldMouse);
+            lineDirection -= lineOrigin;
+            lineDirection.Normalize();
+
+            // Computes the distance along the line until it intersects the plane.
+            // Note: In pure math, there are three possible solutions.
+            //      1.) The line intersects the plane once.  Normal solution.
+            //      2.) The line is outside and parallel to the plane. Denom -> 0 -> Undefined solution.
+            //      3.) The line is contained inside the plane. Denom & Num -> 0 -> Indeterminate solution.
+            // However, in the scope of this problem, only solution 1.) is possible because of the constraints of the camera class.
+            // So, we assume nothing crazy can happen with this computation (which is probably a terrible assumption but oh well).
+            float distance = Vector3.Dot(planePoint - lineOrigin, planeNormal) / Vector3.Dot(lineDirection, planeNormal);
+
+            // Calculate the new model location.
+            Vector3 result = lineOrigin + lineDirection * distance;
+
+            // Convert back into view space.
+            result = Vector3.Transform(result, viewRotation);
+
+            // Store it.
+            modelTranslation = result;
+        }
+
+        #endregion
 
         #region Helper Functions
 

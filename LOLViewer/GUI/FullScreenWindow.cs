@@ -108,7 +108,7 @@ namespace LOLViewer.GUI
             if (isGLLoaded == false)
                 return;
 
-            renderer.OnRender(ref camera);
+            renderer.Render(camera);
           
             glControlMain.SwapBuffers();
         }
@@ -123,7 +123,7 @@ namespace LOLViewer.GUI
                 (float)(glControlMain.ClientRectangle.Height - glControlMain.ClientRectangle.Y),
                 nearPlane, farPlane);
 
-            renderer.OnResize(glControlMain.ClientRectangle.X, glControlMain.ClientRectangle.Y,
+            renderer.Resize(glControlMain.ClientRectangle.X, glControlMain.ClientRectangle.Y,
                 glControlMain.ClientRectangle.Width, glControlMain.ClientRectangle.Height);
 
             GLControlMainOnUpdateFrame(sender, e);
