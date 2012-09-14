@@ -110,7 +110,7 @@ namespace LOLViewer.GUI
             {
                 TimeSpan time = timer.Elapsed;
                 float elapsedTime = (float)time.Seconds + ((float)time.Milliseconds / 1000.0f);
-                renderer.OnUpdate(elapsedTime);
+                renderer.Update(elapsedTime);
 
                 timer.Restart();
 
@@ -185,7 +185,7 @@ namespace LOLViewer.GUI
             int selectedFrame = (int)Math.Floor( frameAbsolute );
             float percentTowardsNextFrame = frameAbsolute - selectedFrame;
 
-            renderer.SetCurrentFrameInCurrentAnimation(selectedFrame, percentTowardsNextFrame);
+            renderer.SetFrameInCurrentAnimation(selectedFrame, percentTowardsNextFrame);
 
             // Redraw the model.
             glControlMain.Invalidate();
@@ -204,7 +204,7 @@ namespace LOLViewer.GUI
             // Called when the animation controller updates the renderer.
             //
 
-            float percentageAnimated = renderer.GetCurrentAnimationPercentageAnimated();
+            float percentageAnimated = renderer.GetPercentAnimated();
             int timelineValue = (int)Math.Floor(percentageAnimated * 100.0f); // Move the decimal into integer range.
 
             // Try to cut down on the amount of time we change the track bar value.

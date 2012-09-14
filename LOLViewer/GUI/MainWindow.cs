@@ -243,7 +243,7 @@ namespace LOLViewer.GUI
             if (isGLLoaded == false)
                 return;
 
-            renderer.OnRender(ref camera);
+            renderer.Render(camera);
 
             glControlMain.SwapBuffers();
         }
@@ -258,7 +258,7 @@ namespace LOLViewer.GUI
                 (float)(glControlMain.ClientRectangle.Height - glControlMain.ClientRectangle.Y),
                 NEAR_PLANE, FAR_PLANE);
 
-            renderer.OnResize(glControlMain.ClientRectangle.X, glControlMain.ClientRectangle.Y,
+            renderer.Resize(glControlMain.ClientRectangle.X, glControlMain.ClientRectangle.Y,
                 glControlMain.ClientRectangle.Width, glControlMain.ClientRectangle.Height);
 
             GLControlMainOnUpdateFrame(sender, e);
@@ -267,7 +267,7 @@ namespace LOLViewer.GUI
         public void GLControlMainOnLoad(object sender, EventArgs e)
         {
             // Set up renderer.
-            bool result = renderer.OnLoad(logger);
+            bool result = renderer.Initialize(logger);
             if (result == false)
             {
                 MessageBox.Show("OpenGL failed to load." +
@@ -300,7 +300,7 @@ namespace LOLViewer.GUI
 
         private void GLControlMainOnDispose(object sender, EventArgs e)
         {
-            renderer.ShutDown();
+            renderer.Shutdown();
 
             // Close logger at this point.
             logger.Event("Program shutdown.");
@@ -414,7 +414,7 @@ namespace LOLViewer.GUI
 
             // Clear old data.
             modelListBox.Items.Clear();
-            renderer.DestroyCurrentModels();
+            renderer.DestroyModel();
             glControlMain.Invalidate();
 
             // Create a background worker to read in the models.
