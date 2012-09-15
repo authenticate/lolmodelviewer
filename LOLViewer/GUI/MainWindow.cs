@@ -203,6 +203,7 @@ namespace LOLViewer.GUI
             animationController.playAnimationButton = playAnimationButton;
             animationController.glControlMain = glControlMain;
             animationController.timelineTrackBar = timelineTrackBar;
+            animationController.mainWindowStatusLabel = mainWindowStatusLabel;
 
             animationController.renderer = renderer;
 
@@ -536,6 +537,8 @@ namespace LOLViewer.GUI
                 {
                     currentAnimationComboBox.SelectedIndex = 0;
                 }
+
+                animationController.DisableAnimation();
 
                 // Update status bar text.
                 mainWindowStatusLabel.Text = "Viewing " + modelName + ".";
