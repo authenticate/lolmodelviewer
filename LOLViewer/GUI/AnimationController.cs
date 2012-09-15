@@ -58,6 +58,7 @@ namespace LOLViewer.GUI
         public ComboBox currentAnimationComboBox;
         public Button playAnimationButton;
         public TrackBar timelineTrackBar;
+        public ToolStripStatusLabel mainWindowStatusLabel;
 
         public AnimationController()
         {
@@ -71,8 +72,9 @@ namespace LOLViewer.GUI
 
         public void DisableAnimation()
         {
-            isEnabled = false;
             StopAnimation();
+
+            isEnabled = false;
 
             enableAnimationButton.Text = "Enable";
 
@@ -85,16 +87,25 @@ namespace LOLViewer.GUI
 
         private void EnableAnimation()
         {
-            isEnabled = true;
             StopAnimation();
 
-            enableAnimationButton.Text = "Disable";
+            // Sanity. Don't enable animation with no animations available.
+            if (currentAnimationComboBox.Items.Count > 0)
+            {
+                isEnabled = true;
 
-            currentAnimationComboBox.Enabled = true;
-            playAnimationButton.Enabled = true;
-            timelineTrackBar.Enabled = true;
+                enableAnimationButton.Text = "Disable";
 
-            renderer.isSkinning = true;
+                currentAnimationComboBox.Enabled = true;
+                playAnimationButton.Enabled = true;
+                timelineTrackBar.Enabled = true;
+
+                renderer.isSkinning = true;
+            }
+            else
+            {
+                mainWindowStatusLabel.Text = "Can not animate.  No animations are available.";
+            }
         }
 
         //
