@@ -844,6 +844,100 @@ namespace LOLViewer.Graphics
             modelTranslation = result;
         }
 
+        /// <summary>
+        /// Translates the model in the plane perpendicular to the model's origin and the
+        /// camera's eye.
+        /// </summary>
+        /// <param name="x">The X mouse coordinate.</param>
+        /// <param name="y">The Y mouse coordinate.</param>
+        /// <param name="camera">The camera.</param>
+        public void TranslateModelByMouseMove(int origMouseX, int origMouseY, int currentMouseX, int currentMouseY, GLCamera camera)
+        {
+            // Invert the transformation pipeline.
+            Matrix4 inverseProjectionView = camera.View * camera.Projection;
+            inverseProjectionView.Invert();
+
+            // Transform mouse coordinates into world space.
+
+            // We are "mouse" space.  Need to convert into screen space.
+            Vector4 origWorldMouse = new Vector4(origMouseX, origMouseY, 1, 1);
+            Vector4 currentWorldMouse = new Vector4(currentMouseX, currentMouseY, 1, 1);
+
+            int[] viewport = new int[4];
+            GL.GetInteger(GetPName.Viewport, viewport);
+
+            origWorldMouse.X = (2.0f * (origWorldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
+            origWorldMouse.Y = -((2.0f * (origWorldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
+            currentWorldMouse.X = (2.0f * (currentWorldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
+            currentWorldMouse.Y = -((2.0f * (currentWorldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
+
+            // We are in screen space.  Need to convert into view space and then world space.
+            origWorldMouse = Vector4.Transform(origWorldMouse, inverseProjectionView);
+            currentWorldMouse = Vector4.Transform(currentWorldMouse, inverseProjectionView);
+
+            if (origWorldMouse.W > float.Epsilon || origWorldMouse.W < float.Epsilon)
+            {
+                origWorldMouse.X /= origWorldMouse.W;
+                origWorldMouse.Y /= origWorldMouse.W;
+                origWorldMouse.Z /= origWorldMouse.W;
+            }
+            if (currentWorldMouse.W > float.Epsilon || currentWorldMouse.W < float.Epsilon)
+            {
+                currentWorldMouse.X /= currentWorldMouse.W;
+                currentWorldMouse.Y /= currentWorldMouse.W;
+                currentWorldMouse.Z /= currentWorldMouse.W;
+            }
+
+            // The model translation is applied in VIEW space.  So, we need to project it back
+            // into world space for these calculations.  We need to remove the translation components of the view
+            // matrix.
+
+            Matrix4 viewRotation = camera.View;
+            viewRotation.M41 = 0;
+            viewRotation.M42 = 0;
+            viewRotation.M43 = 0;
+
+            Matrix4 inverseViewRotation = Matrix4.Invert(viewRotation);
+
+            Vector3 worldModelTranslation = Vector3.Transform(modelTranslation, inverseViewRotation);
+
+            // Get the world location of the model.  This is the point on the plane.
+            Vector3 planePoint = worldModelTranslation;
+
+            // Get the camera eye.  This is the line origin.
+            Vector3 lineOrigin = camera.Eye;
+
+            // Create the normal of the plane.
+            Vector3 planeNormal = lineOrigin - planePoint;
+            planeNormal.Normalize();
+
+            // Calculate where the new location should be
+            // Apply the difference of the two mouse points to the original model location
+            Vector3 location = planePoint - (new Vector3(origWorldMouse) - new Vector3(currentWorldMouse));
+
+            // Create the direction of the line intersecting the plane.
+            Vector3 lineDirection = location - lineOrigin;
+            lineDirection.Normalize();
+
+            // Computes the distance along the line until it intersects the plane.
+            // Note: In pure math, there are three possible solutions.
+            //      1.) The line intersects the plane once.  Normal solution.
+            //      2.) The line is outside and parallel to the plane. Denom -> 0 -> Undefined solution.
+            //      3.) The line is contained inside the plane. Denom & Num -> 0 -> Indeterminate solution.
+            // However, in the scope of this problem, only solution 1.) is possible because of the constraints of the camera class.
+            // So, we assume nothing crazy can happen with this computation (which is probably a terrible assumption but oh well).
+            float distance = Vector3.Dot(planePoint - lineOrigin, planeNormal) / Vector3.Dot(lineDirection, planeNormal);
+
+            // Calculate the new model location.
+            Vector3 result = lineOrigin + lineDirection * distance;
+
+            // Convert back into view space.
+            result = Vector3.Transform(result, viewRotation);
+
+            // Store it.
+            modelTranslation = result;
+        }
+
         #endregion
 
         #region Helper Functions

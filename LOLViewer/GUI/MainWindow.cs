@@ -83,6 +83,10 @@ namespace LOLViewer.GUI
         // Animation Control Handle
         private AnimationController animationController;
 
+        // Translation variables
+        private int mouseDownX;
+        private int mouseDownY;
+
         public MainWindow()
         {
             logger = new Logger(DEFAULT_LOG_FILE); // Not checking result.
@@ -319,7 +323,9 @@ namespace LOLViewer.GUI
             // Send messages to the renderer to translate the model.
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                renderer.TranslateModel(e.X, e.Y, camera);
+                renderer.TranslateModelByMouseMove(mouseDownX, mouseDownY, e.X, e.Y, camera);
+                mouseDownX = e.X;
+                mouseDownY = e.Y;
             }
 
             GLControlMainOnUpdateFrame(sender, e);
@@ -341,10 +347,12 @@ namespace LOLViewer.GUI
         {
             camera.OnMouseButtonDown(e);
 
-            // Send messages to the renderer to translate the model.
+            // Update the last mouse down location and start looking for mouse move
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
-                renderer.TranslateModel(e.X, e.Y, camera);
+                mouseDownX = e.X;
+                mouseDownY = e.Y;
+                //renderer.TranslateModel(e.X, e.Y, camera);
             }
 
             GLControlMainOnUpdateFrame(sender, e);
