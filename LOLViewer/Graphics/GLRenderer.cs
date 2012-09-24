@@ -48,7 +48,7 @@ namespace LOLViewer.Graphics
     public class GLRenderer
     {
         // Renderer Variables
-        public OpenTK.Graphics.Color4 ClearColor 
+        public OpenTK.Graphics.Color4 ClearColor
         {
             get
             {
@@ -77,6 +77,9 @@ namespace LOLViewer.Graphics
 
         private Matrix4 world;
         private Vector3 modelTranslation;
+        private Vector3 mouseTranslationOrigin;
+        private Vector3 mouseTranslation;
+
         public const float DEFAULT_MODEL_SCALE = 0.11f;
         // Can't actually declare as a const.
         private Vector3 DEFAULT_MODEL_TRANSLATION = new Vector3(0, -50, 0);
@@ -307,29 +310,29 @@ namespace LOLViewer.Graphics
             // Old Debugging Code.
             // I kept it around incase it would be cool to draw a ground
             // plane or something.
-            
+
             if (result == true)
             {
                 List<float> verts = new List<float>();
                 // Bottom Left
-                verts.Add( -5.0f );
-                verts.Add( -5.0f );
-                verts.Add( 0.0f );
+                verts.Add(-5.0f);
+                verts.Add(-5.0f);
+                verts.Add(0.0f);
 
                 // Top Left
-                verts.Add( -5.0f );
-                verts.Add( 5.0f );
-                verts.Add( 0.0f );
+                verts.Add(-5.0f);
+                verts.Add(5.0f);
+                verts.Add(0.0f);
 
                 // Top Right
-                verts.Add( 5.0f );
-                verts.Add( 5.0f );
-                verts.Add( 0.0f );
+                verts.Add(5.0f);
+                verts.Add(5.0f);
+                verts.Add(0.0f);
 
                 // Bottom Right
-                verts.Add( 5.0f );
-                verts.Add( -5.0f );
-                verts.Add( 0.0f );
+                verts.Add(5.0f);
+                verts.Add(-5.0f);
+                verts.Add(0.0f);
 
                 List<float> texs = new List<float>();
                 // Bottom Left
@@ -350,17 +353,17 @@ namespace LOLViewer.Graphics
 
                 List<uint> inds = new List<uint>();
                 // Tri 1
-                inds.Add( 0 );
-                inds.Add( 1 );
-                inds.Add( 2 );
+                inds.Add(0);
+                inds.Add(1);
+                inds.Add(2);
 
                 // Tri 2
-                inds.Add( 0 );
-                inds.Add( 2 );
-                inds.Add( 3 );
+                inds.Add(0);
+                inds.Add(2);
+                inds.Add(3);
 
                 result = CreateBillboard("default", verts, texs, inds, logger);
-            }         
+            }
 
             // Misc. OpenGL Parameters.
             if (result == true)
@@ -372,6 +375,45 @@ namespace LOLViewer.Graphics
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region Window Input Functions
+
+        public void OnMouseMove(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                // Update the mouse location.
+                mouseTranslation = Intersect(e.X, e.Y, camera) - mouseTranslationOrigin;
+            }
+        }
+
+        public void OnMouseButtonUp(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                // Get the current location of the mouse.
+                mouseTranslation = Intersect(e.X, e.Y, camera) - mouseTranslationOrigin;
+
+                // Compute the new model location.
+                modelTranslation += mouseTranslation;
+
+                // Clear the mouse origin.
+                mouseTranslationOrigin = Vector3.Zero;
+                mouseTranslation = Vector3.Zero;
+            }
+        }
+
+        public void OnMouseButtonDown(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
+        {
+            if (e.Button == System.Windows.Forms.MouseButtons.Right)
+            {
+                // Store the origin of the mouse.
+                mouseTranslationOrigin = Intersect(e.X, e.Y, camera);
+                mouseTranslation = Vector3.Zero;
+            }
         }
 
         #endregion
@@ -404,9 +446,9 @@ namespace LOLViewer.Graphics
             // Add the translation in view space.  This allows the model to rotate around
             // itself instead of the origin in world space.
             Matrix4 view = camera.View;
-            view.M41 += modelTranslation.X;
-            view.M42 += modelTranslation.Y;
-            view.M43 += modelTranslation.Z;
+            view.M41 += modelTranslation.X + mouseTranslation.X;
+            view.M42 += modelTranslation.Y + mouseTranslation.Y;
+            view.M43 += modelTranslation.Z + mouseTranslation.Z;
 
             //
             // Load shaders for Phong lit static models.
@@ -588,6 +630,8 @@ namespace LOLViewer.Graphics
             world.M43 = DEFAULT_MODEL_TRANSLATION.Z;
 
             modelTranslation = Vector3.Zero;
+            mouseTranslationOrigin = Vector3.Zero;
+            mouseTranslation = Vector3.Zero;
         }
 
         /// <summary>
@@ -763,14 +807,18 @@ namespace LOLViewer.Graphics
             world.M43 = translation.Z;
         }
 
+        #endregion
+
+        #region Helper Functions
+
         /// <summary>
-        /// Translates the model in the plane perpendicular to the model's origin and the
-        /// camera's eye.
+        /// Computes the intersection point between the mouse coordinate vector and the plane
+        /// formed by the model's location and the camera's eye.
         /// </summary>
         /// <param name="x">The X mouse coordinate.</param>
         /// <param name="y">The Y mouse coordinate.</param>
         /// <param name="camera">The camera.</param>
-        public void TranslateModel(int x, int y, GLCamera camera)
+        private Vector3 Intersect(int x, int y, GLCamera camera)
         {
             // Invert the transformation pipeline.
             Matrix4 inverseProjectionView = camera.View * camera.Projection;
@@ -840,110 +888,8 @@ namespace LOLViewer.Graphics
             // Convert back into view space.
             result = Vector3.Transform(result, viewRotation);
 
-            // Store it.
-            modelTranslation = result;
+            return result;
         }
-
-        /// <summary>
-        /// Translates the model in the plane perpendicular to the model's origin and the
-        /// camera's eye.
-        /// </summary>
-        /// <param name="x">The X mouse coordinate.</param>
-        /// <param name="y">The Y mouse coordinate.</param>
-        /// <param name="camera">The camera.</param>
-        public void TranslateModelByMouseMove(int origMouseX, int origMouseY, int currentMouseX, int currentMouseY, GLCamera camera)
-        {
-            // Invert the transformation pipeline.
-            Matrix4 inverseProjectionView = camera.View * camera.Projection;
-            inverseProjectionView.Invert();
-
-            // Transform mouse coordinates into world space.
-
-            // We are "mouse" space.  Need to convert into screen space.
-            Vector4 origWorldMouse = new Vector4(origMouseX, origMouseY, 1, 1);
-            Vector4 currentWorldMouse = new Vector4(currentMouseX, currentMouseY, 1, 1);
-
-            int[] viewport = new int[4];
-            GL.GetInteger(GetPName.Viewport, viewport);
-
-            origWorldMouse.X = (2.0f * (origWorldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
-            origWorldMouse.Y = -((2.0f * (origWorldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
-            currentWorldMouse.X = (2.0f * (currentWorldMouse.X - viewport[0]) / viewport[2]) - 1.0f;
-            currentWorldMouse.Y = -((2.0f * (currentWorldMouse.Y - viewport[1]) / viewport[3]) - 1.0f);
-
-            // We are in screen space.  Need to convert into view space and then world space.
-            origWorldMouse = Vector4.Transform(origWorldMouse, inverseProjectionView);
-            currentWorldMouse = Vector4.Transform(currentWorldMouse, inverseProjectionView);
-
-            if (origWorldMouse.W > float.Epsilon || origWorldMouse.W < float.Epsilon)
-            {
-                origWorldMouse.X /= origWorldMouse.W;
-                origWorldMouse.Y /= origWorldMouse.W;
-                origWorldMouse.Z /= origWorldMouse.W;
-            }
-            if (currentWorldMouse.W > float.Epsilon || currentWorldMouse.W < float.Epsilon)
-            {
-                currentWorldMouse.X /= currentWorldMouse.W;
-                currentWorldMouse.Y /= currentWorldMouse.W;
-                currentWorldMouse.Z /= currentWorldMouse.W;
-            }
-
-            // The model translation is applied in VIEW space.  So, we need to project it back
-            // into world space for these calculations.  We need to remove the translation components of the view
-            // matrix.
-
-            Matrix4 viewRotation = camera.View;
-            viewRotation.M41 = 0;
-            viewRotation.M42 = 0;
-            viewRotation.M43 = 0;
-
-            Matrix4 inverseViewRotation = Matrix4.Invert(viewRotation);
-
-            Vector3 worldModelTranslation = Vector3.Transform(modelTranslation, inverseViewRotation);
-
-            // Get the world location of the model.  This is the point on the plane.
-            Vector3 planePoint = worldModelTranslation;
-
-            // Get the camera eye.  This is the line origin.
-            Vector3 lineOrigin = camera.Eye;
-
-            // Create the normal of the plane.
-            Vector3 planeNormal = lineOrigin - planePoint;
-            planeNormal.Normalize();
-
-            // Calculate where the new location should be
-            // Apply the difference of the two mouse points to the original model location
-            Vector3 location = planePoint - (new Vector3(origWorldMouse) - new Vector3(currentWorldMouse));
-
-            // Create the direction of the line intersecting the plane.
-            Vector3 lineDirection = location - lineOrigin;
-            lineDirection.Normalize();
-
-            // Computes the distance along the line until it intersects the plane.
-            // Note: In pure math, there are three possible solutions.
-            //      1.) The line intersects the plane once.  Normal solution.
-            //      2.) The line is outside and parallel to the plane. Denom -> 0 -> Undefined solution.
-            //      3.) The line is contained inside the plane. Denom & Num -> 0 -> Indeterminate solution.
-            // However, in the scope of this problem, only solution 1.) is possible because of the constraints of the camera class.
-            // So, we assume nothing crazy can happen with this computation (which is probably a terrible assumption but oh well).
-            float distance = Vector3.Dot(planePoint - lineOrigin, planeNormal) / Vector3.Dot(lineDirection, planeNormal);
-
-            // Calculate the new model location.
-            Vector3 result = lineOrigin + lineDirection * distance;
-
-            // Convert back into view space.
-            result = Vector3.Transform(result, viewRotation);
-
-            // Store it.
-            modelTranslation = result;
-        }
-
-        #endregion
-
-        #region Helper Functions
-
-        // TODO: Alot of this code is a mess.
-        // It should be refactored into more meaningful sub classes.
 
         private bool CreateShaderFromMemory(String name, String data, ShaderType type, Logger logger)
         {
@@ -974,7 +920,7 @@ namespace LOLViewer.Graphics
         }
 
         private bool CreateProgram(String progName, String vertName, String fragName,
-            List<String> attributes, List<String> uniforms, Logger logger) 
+            List<String> attributes, List<String> uniforms, Logger logger)
         {
             bool result = true;
 
@@ -1068,7 +1014,7 @@ namespace LOLViewer.Graphics
             return result;
         }
 
-        private bool CreateBillboard( String name, List<float> vertexData,
+        private bool CreateBillboard(String name, List<float> vertexData,
             List<float> texData, List<uint> indexData, Logger logger)
         {
             bool result = true;
@@ -1097,7 +1043,7 @@ namespace LOLViewer.Graphics
             if (result == true)
             {
                 // Model is stored in a RAF.
-                result = SKNReader.Read(model.skn, ref file, logger);             
+                result = SKNReader.Read(model.skn, ref file, logger);
             }
 
             staticModel = new GLStaticModel();
@@ -1168,7 +1114,7 @@ namespace LOLViewer.Graphics
                 // Texture stored in RAF file.
                 result = CreateTexture(model.texture, TextureTarget.Texture2D,
                         GLTexture.SupportedImageEncodings.DDS, logger);
-                
+
                 // Store it in our new model file.
                 if (result == true)
                 {
