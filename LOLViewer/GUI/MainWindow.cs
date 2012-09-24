@@ -83,10 +83,6 @@ namespace LOLViewer.GUI
         // Animation Control Handle
         private AnimationController animationController;
 
-        // Translation variables
-        private int mouseDownX;
-        private int mouseDownY;
-
         public MainWindow()
         {
             logger = new Logger(DEFAULT_LOG_FILE); // Not checking result.
@@ -119,7 +115,7 @@ namespace LOLViewer.GUI
                         logger.Warning("Failed to locate " + DEFAULT_DIRECTORY_FILE + ".");
                     }
                 }
-                catch 
+                catch
                 {
                     logger.Warning("Failed to open " + DEFAULT_DIRECTORY_FILE + ".");
                 }
@@ -319,14 +315,7 @@ namespace LOLViewer.GUI
         private void GLControlOnMouseMove(object sender, MouseEventArgs e)
         {
             camera.OnMouseMove(e);
-
-            // Send messages to the renderer to translate the model.
-            if (e.Button == System.Windows.Forms.MouseButtons.Right)
-            {
-                renderer.TranslateModelByMouseMove(mouseDownX, mouseDownY, e.X, e.Y, camera);
-                mouseDownX = e.X;
-                mouseDownY = e.Y;
-            }
+            renderer.OnMouseMove(e, camera);
 
             GLControlMainOnUpdateFrame(sender, e);
         }
@@ -340,20 +329,15 @@ namespace LOLViewer.GUI
         private void GLControlOnMouseUp(object sender, MouseEventArgs e)
         {
             camera.OnMouseButtonUp(e);
+            renderer.OnMouseButtonUp(e, camera);
+
             GLControlMainOnUpdateFrame(sender, e);
         }
 
         private void GLControlOnMouseDown(object sender, MouseEventArgs e)
         {
             camera.OnMouseButtonDown(e);
-
-            // Update the last mouse down location and start looking for mouse move
-            if (e.Button == System.Windows.Forms.MouseButtons.Right)
-            {
-                mouseDownX = e.X;
-                mouseDownY = e.Y;
-                //renderer.TranslateModel(e.X, e.Y, camera);
-            }
+            renderer.OnMouseButtonDown(e, camera);
 
             GLControlMainOnUpdateFrame(sender, e);
         }
@@ -452,7 +436,8 @@ namespace LOLViewer.GUI
                 logger.Error("Failed to read models.");
 
                 // UI calls need to be executed on the main thread.
-                this.BeginInvoke((Action)(() => {
+                this.BeginInvoke((Action)(() =>
+                {
                     MessageBox.Show(this,
                         "Unable to read the League of Legends' installation directory. " +
                         "If you installed League of Legends " +
@@ -460,7 +445,7 @@ namespace LOLViewer.GUI
                         "select the League of Legends' installation directory.",
                         "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }));
-                
+
                 return;
             }
 
@@ -524,7 +509,7 @@ namespace LOLViewer.GUI
 
         private void OnModelListDoubleClick(object sender, EventArgs e)
         {
-            String modelName = (String) modelListBox.SelectedItem;
+            String modelName = (String)modelListBox.SelectedItem;
 
             // TODO: Not really sure how to handle errors
             // if either of these functions fail.
@@ -592,9 +577,9 @@ namespace LOLViewer.GUI
         {
             ColorDialog colorDlg = new ColorDialog();
 
-            Color iniColor = Color.FromArgb( (int) (renderer.ClearColor.A * 255),
-                (int) (renderer.ClearColor.R * 255), (int) (renderer.ClearColor.G * 255),
-                (int) (renderer.ClearColor.B * 255) );
+            Color iniColor = Color.FromArgb((int)(renderer.ClearColor.A * 255),
+                (int)(renderer.ClearColor.R * 255), (int)(renderer.ClearColor.G * 255),
+                (int)(renderer.ClearColor.B * 255));
 
             colorDlg.Color = iniColor;
 
