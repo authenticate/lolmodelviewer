@@ -315,7 +315,7 @@ namespace LOLViewer.GUI
         private void GLControlOnMouseMove(object sender, MouseEventArgs e)
         {
             camera.OnMouseMove(e);
-            renderer.OnMouseMove(e, camera);
+            renderer.MouseMove(e, camera);
 
             GLControlMainOnUpdateFrame(sender, e);
         }
@@ -329,7 +329,7 @@ namespace LOLViewer.GUI
         private void GLControlOnMouseUp(object sender, MouseEventArgs e)
         {
             camera.OnMouseButtonUp(e);
-            renderer.OnMouseButtonUp(e, camera);
+            renderer.MouseButtonUp(e, camera);
 
             GLControlMainOnUpdateFrame(sender, e);
         }
@@ -337,7 +337,7 @@ namespace LOLViewer.GUI
         private void GLControlOnMouseDown(object sender, MouseEventArgs e)
         {
             camera.OnMouseButtonDown(e);
-            renderer.OnMouseButtonDown(e, camera);
+            renderer.MouseButtonDown(e, camera);
 
             GLControlMainOnUpdateFrame(sender, e);
         }

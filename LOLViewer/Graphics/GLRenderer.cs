@@ -381,7 +381,7 @@ namespace LOLViewer.Graphics
 
         #region Window Input Functions
 
-        public void OnMouseMove(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
+        public void MouseMove(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
@@ -390,7 +390,7 @@ namespace LOLViewer.Graphics
             }
         }
 
-        public void OnMouseButtonUp(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
+        public void MouseButtonUp(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
@@ -406,7 +406,7 @@ namespace LOLViewer.Graphics
             }
         }
 
-        public void OnMouseButtonDown(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
+        public void MouseButtonDown(System.Windows.Forms.MouseEventArgs e, GLCamera camera)
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
