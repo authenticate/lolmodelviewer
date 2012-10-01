@@ -534,7 +534,7 @@ namespace LOLViewer.GUI
                 animationController.DisableAnimation();
 
                 // Update status bar text.
-                mainWindowStatusLabel.Text = "Viewing " + modelName + ".";
+                mainWindowStatusLabel.Text = "Viewing " + modelName + ". Left mouse rotates, right mouse pans, and mouse wheel zooms.";
             }
 
             OnResetCameraButtonClick(sender, e);
