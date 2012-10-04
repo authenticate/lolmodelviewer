@@ -37,9 +37,8 @@ namespace LOLFileReader
 {
     public class SKLFile
     {
-        // Not sure what the first eight bytes represent.
-        public int              magicOne;
-        public int              magicTwo;
+        public const Int32 ID_SIZE = 8;
+        public String id;
 
         public uint             version;
         public uint             designerID;
@@ -50,15 +49,20 @@ namespace LOLFileReader
         public uint             numBoneIDs;
         public List<uint>       boneIDs;
 
+        // Maps .skl bone ID's to version 4 .anm bone ID's.
+        public Dictionary<uint, uint> boneIDMap;
+
         public SKLFile()
         {
-            magicOne = magicTwo = 0;
+            id = String.Empty;
 
             version = designerID = numBones = 0;
             bones = new List<SKLBone>();
             
             numBoneIDs = 0;
             boneIDs = new List<uint>();
+
+            boneIDMap = new Dictionary<uint, uint>();
         }
     }
 }
