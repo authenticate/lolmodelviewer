@@ -93,9 +93,7 @@ namespace LOLFileReader
             try
             {
                 // File Header Information.
-                data.magicOne = file.ReadInt32();
-                data.magicTwo = file.ReadInt32();
-
+                data.id = new String(file.ReadChars(SKLFile.ID_SIZE));
                 data.version = file.ReadUInt32();
 
                 if (data.version == 1 || data.version == 2)
@@ -208,11 +206,13 @@ namespace LOLFileReader
                     }
 
                     file.BaseStream.Position = offset1;
-                    for (int i = 0; i < data.numBones; ++i) // ?
+                    for (int i = 0; i < data.numBones; ++i) // Inds for version 4 animation.
                     {
                         // 8 bytes
-                        int valueOne = file.ReadInt32();
-                        int valueTwo = file.ReadInt32();
+                        uint sklID = file.ReadUInt32();
+                        uint anmID = file.ReadUInt32();
+
+                        data.boneIDMap[anmID] = sklID;
                     }
 
                     file.BaseStream.Position = offsetToAnimationIndices;
@@ -252,8 +252,7 @@ namespace LOLFileReader
                 result = false;
             }
 
-            logger.Event("Magic One: " + data.magicOne);
-            logger.Event("Magic Two: " + data.magicTwo);
+            logger.Event("File ID: " + data.id);
             logger.Event("Version: " + data.version);
             logger.Event("Designer ID: " + data.designerID);
             logger.Event("Number of Bones: " + data.numBones);
