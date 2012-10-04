@@ -36,12 +36,12 @@ namespace LOLFileReader
 {
     public class ANMFile
     {
-        public UInt32 magicOne;
-        public UInt32 magicTwo;
+        public const Int32 ID_SIZE = 8;
+        public String id;
 
         public UInt32 version;
 
-        public UInt32 magicThree;
+        public UInt32 magic;
 
         public UInt32 numberOfBones;
         public UInt32 numberOfFrames;
@@ -52,12 +52,11 @@ namespace LOLFileReader
 
         public ANMFile()
         {
-            magicOne = 0;
-            magicTwo = 0;
+            id = String.Empty;
 
             version = 0;
 
-            magicThree = 0;
+            magic = 0;
 
             numberOfBones = 0;
             numberOfFrames = 0;

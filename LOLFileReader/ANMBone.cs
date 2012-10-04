@@ -41,13 +41,13 @@ namespace LOLFileReader
     {
         public const int BONE_NAME_LENGTH = 32;
         public String name;
-        public UInt32 flag;
+        public UInt32 id;
         public List<ANMFrame> frames;
 
         public ANMBone()
         {
             name = String.Empty;
-            flag = 0;
+            id = 0;
             frames = new List<ANMFrame>();
         }
     }

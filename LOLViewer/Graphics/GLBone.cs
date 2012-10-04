@@ -44,7 +44,7 @@ namespace LOLViewer.Graphics
         public Vector3 worldPosition;
 
         public String name;
-        public UInt32 flag;
+        public UInt32 id;
         public List<GLFrame> frames;
 
         public GLBone()
@@ -56,7 +56,7 @@ namespace LOLViewer.Graphics
             worldPosition = Vector3.Zero;
 
             name = String.Empty;
-            flag = 0;
+            id = 0;
             frames = new List<GLFrame>();
         }
     }

@@ -622,7 +622,7 @@ namespace LOLViewer.Graphics
                     GLBone glBone = new GLBone();
 
                     glBone.name = bone.name;
-                    glBone.flag = bone.flag;
+                    glBone.id = bone.id;
 
                     // Convert ANMFrame to GLFrame.
                     foreach (ANMFrame frame in bone.frames)
