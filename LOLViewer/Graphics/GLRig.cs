@@ -137,23 +137,12 @@ namespace LOLViewer.Graphics
         /// <summary>
         /// Calculate the skinning transforms for bones.  All position and orientation data is assumed to be relative to the parent.
         /// </summary>
-        /// <param name="frame">0 - current frame, 1 - next frame</param>
         /// <param name="boneID">The bone ID the data belongs to.</param>
         /// <param name="orientation">Rotation of the bone.</param>
         /// <param name="position">Translation of the bone.</param>
-        public void CalculateWorldSpacePose(int frame, int boneID, Quaternion orientation, Vector3 position)
+        public void CalculateCurrentFramePose(int boneID, Quaternion orientation, Vector3 position)
         {
-            GLBone poseBone = null;
-
-            // Determine which frame this data applies to.
-            if (frame == 0)
-            {
-                poseBone = currentFrame[boneID];
-            }
-            else
-            {
-                poseBone = nextFrame[boneID];
-            }
+            GLBone poseBone = currentFrame[boneID];
 
             poseBone.parent = bindingJoints[boneID].parent;
             poseBone.scale = bindingJoints[boneID].scale;
@@ -172,15 +161,7 @@ namespace LOLViewer.Graphics
             else
             {
                 // Determine the parent bone.
-                GLBone parentBone = null;
-                if (frame == 0)
-                {
-                    parentBone = currentFrame[poseBone.parent];
-                }
-                else
-                {
-                    parentBone = nextFrame[poseBone.parent];
-                }
+                GLBone parentBone = currentFrame[poseBone.parent];
 
                 // Append quaternions for rotation transform B * A
                 poseBone.worldOrientation = parentBone.worldOrientation * orientation;
@@ -191,6 +172,48 @@ namespace LOLViewer.Graphics
                 localPosition.Z = position.Z * poseBone.scale;
 
                 poseBone.worldPosition = parentBone.worldPosition + 
+                    Vector3.Transform(localPosition, parentBone.worldOrientation);
+            }
+        }
+
+        /// <summary>
+        /// Calculate the skinning transforms for bones.  All position and orientation data is assumed to be relative to the parent.
+        /// </summary>
+        /// <param name="boneID">The bone ID the data belongs to.</param>
+        /// <param name="orientation">Rotation of the bone.</param>
+        /// <param name="position">Translation of the bone.</param>
+        public void CalculateNextFramePose(int boneID, Quaternion orientation, Vector3 position)
+        {
+            GLBone poseBone = nextFrame[boneID];
+
+            poseBone.parent = bindingJoints[boneID].parent;
+            poseBone.scale = bindingJoints[boneID].scale;
+
+            // Is this a root bone?
+            if (poseBone.parent == -1)
+            {
+                // No parent bone for root bones.
+                // So, just calculate directly.
+                poseBone.worldPosition.X = position.X * poseBone.scale;
+                poseBone.worldPosition.Y = position.Y * poseBone.scale;
+                poseBone.worldPosition.Z = position.Z * poseBone.scale;
+
+                poseBone.worldOrientation = orientation;
+            }
+            else
+            {
+                // Determine the parent bone.
+                GLBone parentBone = nextFrame[poseBone.parent];
+
+                // Append quaternions for rotation transform B * A
+                poseBone.worldOrientation = parentBone.worldOrientation * orientation;
+
+                Vector3 localPosition = Vector3.Zero;
+                localPosition.X = position.X * poseBone.scale;
+                localPosition.Y = position.Y * poseBone.scale;
+                localPosition.Z = position.Z * poseBone.scale;
+
+                poseBone.worldPosition = parentBone.worldPosition +
                     Vector3.Transform(localPosition, parentBone.worldOrientation);
             }
         }
