@@ -71,7 +71,7 @@ namespace LOLViewer.Graphics
 
         private Dictionary<MouseButtons, bool> mouseState;
         private int wheelDelta;
-        private const float WHEEL_SCALE = 0.0005f;
+        private const float WHEEL_SCALE = 0.0015f;
 
         private const float MINIMUM_RADIUS = 35.0f;
         private const float MAXIMUM_RADIUS = 800.0f;

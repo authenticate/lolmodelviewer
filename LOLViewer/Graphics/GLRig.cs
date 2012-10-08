@@ -123,7 +123,6 @@ namespace LOLViewer.Graphics
                 bone.parent = boneParents[i];
 
                 bone.worldPosition = bonePositions[i];
-                bone.scale = 1.0f / boneScales[i];
                 bone.worldOrientation = boneOrientations[i];
 
                 Matrix4 transform = Matrix4.Rotate(bone.worldOrientation);
@@ -145,17 +144,13 @@ namespace LOLViewer.Graphics
             GLBone poseBone = currentFrame[boneID];
 
             poseBone.parent = bindingBones[boneID].parent;
-            poseBone.scale = bindingBones[boneID].scale;
 
             // Is this a root bone?
             if (poseBone.parent == -1)
             {
                 // No parent bone for root bones.
                 // So, just calculate directly.
-                poseBone.worldPosition.X = position.X * poseBone.scale;
-                poseBone.worldPosition.Y = position.Y * poseBone.scale;
-                poseBone.worldPosition.Z = position.Z * poseBone.scale;
-                
+                poseBone.worldPosition = position;                
                 poseBone.worldOrientation = orientation;
             }
             else
@@ -165,14 +160,8 @@ namespace LOLViewer.Graphics
 
                 // Append quaternions for rotation transform B * A
                 poseBone.worldOrientation = parentBone.worldOrientation * orientation;
-
-                Vector3 localPosition = Vector3.Zero;
-                localPosition.X = position.X * poseBone.scale;
-                localPosition.Y = position.Y * poseBone.scale;
-                localPosition.Z = position.Z * poseBone.scale;
-
-                poseBone.worldPosition = parentBone.worldPosition + 
-                    Vector3.Transform(localPosition, parentBone.worldOrientation);
+                poseBone.worldPosition = parentBone.worldPosition +
+                    Vector3.Transform(position, parentBone.worldOrientation);
             }
         }
 
@@ -187,17 +176,13 @@ namespace LOLViewer.Graphics
             GLBone poseBone = nextFrame[boneID];
 
             poseBone.parent = bindingBones[boneID].parent;
-            poseBone.scale = bindingBones[boneID].scale;
 
             // Is this a root bone?
             if (poseBone.parent == -1)
             {
                 // No parent bone for root bones.
                 // So, just calculate directly.
-                poseBone.worldPosition.X = position.X * poseBone.scale;
-                poseBone.worldPosition.Y = position.Y * poseBone.scale;
-                poseBone.worldPosition.Z = position.Z * poseBone.scale;
-
+                poseBone.worldPosition = position;
                 poseBone.worldOrientation = orientation;
             }
             else
@@ -207,14 +192,8 @@ namespace LOLViewer.Graphics
 
                 // Append quaternions for rotation transform B * A
                 poseBone.worldOrientation = parentBone.worldOrientation * orientation;
-
-                Vector3 localPosition = Vector3.Zero;
-                localPosition.X = position.X * poseBone.scale;
-                localPosition.Y = position.Y * poseBone.scale;
-                localPosition.Z = position.Z * poseBone.scale;
-
                 poseBone.worldPosition = parentBone.worldPosition +
-                    Vector3.Transform(localPosition, parentBone.worldOrientation);
+                    Vector3.Transform(position, parentBone.worldOrientation);
             }
         }
 
@@ -230,10 +209,6 @@ namespace LOLViewer.Graphics
 
             for (int i = 0; i < MAX_BONES; ++i)
             {
-                // Get inverse of original pose.
-                Matrix4 inv = bindingBones[i].worldTransform;
-                inv.Invert();
-
                 //
                 // Interpolate between the current frame
                 // and the next frame.
@@ -253,10 +228,9 @@ namespace LOLViewer.Graphics
                 finalTransform.M42 = finalPosition.Y;
                 finalTransform.M43 = finalPosition.Z;
 
-                // Update to form final transform.
-                transforms[i] = inv *                                           // invert of default/binding pose
-                    Matrix4.Scale(bindingBones[i].scale) *                     // invert the bone scale
-                    finalTransform;                                             // transform by the current key frame's pose
+                // Invert binding bone to compute the result.
+                Matrix4 inverse = Matrix4.Invert(bindingBones[i].worldTransform);                
+                transforms[i] = inverse * finalTransform;                               
             }
             
             return transforms;

@@ -40,7 +40,6 @@ namespace LOLViewer.Graphics
     {
         public String name;
         public int parent;
-        public float scale;
 
         public Vector3 worldPosition;
         public Quaternion worldOrientation;
@@ -53,7 +52,6 @@ namespace LOLViewer.Graphics
             name = String.Empty;
             // -1 reserved for root
             parent = -2;
-            scale = 1.0f;
 
             worldPosition = Vector3.Zero;
             worldOrientation = Quaternion.Identity;
