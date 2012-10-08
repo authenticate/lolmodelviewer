@@ -64,8 +64,8 @@ namespace LOLViewer.GUI
 
         // Default Camera
         private const float FIELD_OF_VIEW = OpenTK.MathHelper.PiOver4;
-        private const float NEAR_PLANE = 0.1f;
-        private const float FAR_PLANE = 1000.0f;
+        private const float NEAR_PLANE = 1.0f;
+        private const float FAR_PLANE = 2000.0f;
         private GLCamera camera;
 
         // IO Variables
@@ -75,10 +75,6 @@ namespace LOLViewer.GUI
         // Model Name Search Variables
         private String lastSearch;
         private List<String> currentSearchSubset;
-
-        // GUI Variables
-        // converts from World Transform scale to trackbar units.
-        private const float DEFAULT_SCALE_TRACKBAR = 1000.0f;
 
         // Animation Control Handle
         private AnimationController animationController;
@@ -92,7 +88,7 @@ namespace LOLViewer.GUI
             timer = new Stopwatch();
 
             camera = new GLCamera();
-            camera.SetViewParameters(new Vector3(0.0f, 0.0f, 300.0f), Vector3.Zero);
+            camera.SetViewParameters(new Vector3(0.0f, 0.0f, 2.0f), Vector3.Zero);
             renderer = new GLRenderer();
 
             // Set up the reader and initialize its root to the value in 'lolviewer.dat' if
@@ -147,8 +143,6 @@ namespace LOLViewer.GUI
             mainWindowProgressBar.Style = ProgressBarStyle.Marquee;
             mainWindowProgressBar.Value = 100;
 
-            modelScaleTrackbar.Value = (int)(GLRenderer.DEFAULT_MODEL_SCALE * DEFAULT_SCALE_TRACKBAR);
-
             lastSearch = String.Empty;
             currentSearchSubset = new List<String>();
 
@@ -180,9 +174,6 @@ namespace LOLViewer.GUI
             // Model View Callbacks
             modelListBox.DoubleClick += new EventHandler(OnModelListDoubleClick);
             modelListBox.KeyPress += new KeyPressEventHandler(OnModelListKeyPress);
-
-            // Trackbars
-            modelScaleTrackbar.Scroll += new EventHandler(ModelScaleTrackbarOnScroll);
 
             // Buttons
             resetCameraButton.Click += new EventHandler(OnResetCameraButtonClick);
@@ -550,17 +541,6 @@ namespace LOLViewer.GUI
                 OnModelListDoubleClick(sender, e);
                 e.Handled = true; // fixes unwanted 'ding' sound
             }
-        }
-
-        //
-        // Trackbar Handlers
-        //
-        private void ModelScaleTrackbarOnScroll(object sender, EventArgs e)
-        {
-            renderer.ScaleModel(modelScaleTrackbar.Value / DEFAULT_SCALE_TRACKBAR);
-
-            // Redraw.
-            GLControlMainOnPaint(sender, null);
         }
 
         // Button Handlers

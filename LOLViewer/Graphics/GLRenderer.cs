@@ -80,13 +80,11 @@ namespace LOLViewer.Graphics
         private Vector3 mouseTranslationOrigin;
         private Vector3 mouseTranslation;
 
-        public const float DEFAULT_MODEL_SCALE = 0.11f;
         // Can't actually declare as a const.
         private Vector3 DEFAULT_MODEL_TRANSLATION = new Vector3(0, -50, 0);
 
         // Skinning Identities. Used when animation mode is disabled.
         public bool isSkinning;
-        private Matrix4[] identityTM = new Matrix4[GLRig.MAX_BONES];
 
         #region Initialization
 
@@ -104,11 +102,6 @@ namespace LOLViewer.Graphics
             isSkinning = false;
 
             Reset();
-
-            for (int i = 0; i < GLRig.MAX_BONES; ++i)
-            {
-                identityTM[i] = Matrix4.Identity;
-            }
         }
 
         /// <summary>
@@ -426,13 +419,6 @@ namespace LOLViewer.Graphics
         /// <param name="camera">The camera for the scene.</param>
         public void Render(GLCamera camera)
         {
-            //
-            // TODO: Refactor/clean up this render loop.
-            // It supports multiple static and dynamic models at the moment.
-            // However, none of that is ever used.  Only one dynamic is ever loaded at the moment.
-            // There's just alot of clutter in this function which is really not needed.
-            //
-
             // Clear back buffers.
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit);
 
@@ -528,62 +514,22 @@ namespace LOLViewer.Graphics
             // Bone Transforms
             //
 
-
-            if (isSkinning == true)
+            Matrix4[] transforms = riggedModel.GetBoneTransformations();
+            if (transforms == null || isSkinning == false)
             {
-                Matrix4[] transforms = riggedModel.GetBoneTransformations();
-                // Sanity for when the currentAnimation is invalid.
-                if (transforms != null)
+                transforms = new Matrix4[GLRig.MAX_BONES];
+                for (int i = 0; i < GLRig.MAX_BONES; ++i)
                 {
-                    //
-                    // Normal case when skinning is valid.
-                    //
-
-                    program.UpdateUniform("u_BoneTransform", riggedModel.GetBoneTransformations());
-                }
-                else
-                {
-                    //
-                    // Odd case when the currentAnimation does not exist.
-                    //
-
-                    // Perserve world space transforms between skinning and non skinning.
-                    transforms = new Matrix4[GLRig.MAX_BONES];
-                    for (int i = 0; i < GLRig.MAX_BONES; ++i)
-                    {
-                        transforms[i] = Matrix4.Scale(1.0f /
-                            riggedModel.rig.bindingBones[0].scale); //hacky
-                    }
-
-                    program.UpdateUniform("u_BoneTransform", transforms);
+                    transforms[i] = Matrix4.Identity;
                 }
             }
-            else
-            {
-                //
-                // Case when the user does not wish to use animation data and just
-                // wants to render the model.
-                //
 
-                program.UpdateUniform("u_BoneTransform", identityTM);
-            }
+            program.UpdateUniform("u_BoneTransform", transforms);
 
             //
-            // World Transform.  We need to offset it when not using the skinning
-            // pipeline.
+            // World Transform.
             //
-
-            Matrix4 worldView = Matrix4.Identity;
-            if (isSkinning == true)
-            {
-                worldView = world * view;
-            }
-            else
-            {
-                // Account for the skinning scale if we're not skinning.
-                Matrix4 scale = Matrix4.Scale(riggedModel.rig.bindingBones[0].scale); //hacky
-                worldView = scale * world * view;
-            }
+            Matrix4 worldView = world * view;
 
             // Vertex Shader Uniforms
             program.UpdateUniform("u_WorldView",
@@ -623,7 +569,7 @@ namespace LOLViewer.Graphics
         /// </summary>
         public void Reset()
         {
-            world = Matrix4.Scale(DEFAULT_MODEL_SCALE);
+            world = Matrix4.Identity;
 
             world.M41 = DEFAULT_MODEL_TRANSLATION.X;
             world.M42 = DEFAULT_MODEL_TRANSLATION.Y;

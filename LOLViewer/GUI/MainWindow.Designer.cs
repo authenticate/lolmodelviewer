@@ -71,8 +71,6 @@ namespace LOLViewer.GUI
             this.currentAnimationComboBox = new System.Windows.Forms.ComboBox();
             this.playAnimationButton = new System.Windows.Forms.Button();
             this.timelineTrackBar = new System.Windows.Forms.TrackBar();
-            this.modelScaleLabel = new System.Windows.Forms.Label();
-            this.modelScaleTrackbar = new System.Windows.Forms.TrackBar();
             this.fullscreenButton = new System.Windows.Forms.Button();
             this.backgroundColorButton = new System.Windows.Forms.Button();
             this.resetCameraButton = new System.Windows.Forms.Button();
@@ -89,7 +87,6 @@ namespace LOLViewer.GUI
             this.glControlTabControlSplitContainer.Panel2.SuspendLayout();
             this.glControlTabControlSplitContainer.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.timelineTrackBar)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.modelScaleTrackbar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.glTabModelListBoxSplitContainer)).BeginInit();
             this.glTabModelListBoxSplitContainer.Panel1.SuspendLayout();
             this.glTabModelListBoxSplitContainer.Panel2.SuspendLayout();
@@ -190,8 +187,6 @@ namespace LOLViewer.GUI
             this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.currentAnimationComboBox);
             this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.playAnimationButton);
             this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.timelineTrackBar);
-            this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.modelScaleLabel);
-            this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.modelScaleTrackbar);
             this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.fullscreenButton);
             this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.backgroundColorButton);
             this.glControlTabControlSplitContainer.Panel1.Controls.Add(this.resetCameraButton);
@@ -210,7 +205,7 @@ namespace LOLViewer.GUI
             // enableAnimationButton
             // 
             this.enableAnimationButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.enableAnimationButton.Location = new System.Drawing.Point(8, 180);
+            this.enableAnimationButton.Location = new System.Drawing.Point(8, 138);
             this.enableAnimationButton.Name = "enableAnimationButton";
             this.enableAnimationButton.Size = new System.Drawing.Size(109, 23);
             this.enableAnimationButton.TabIndex = 5;
@@ -222,7 +217,7 @@ namespace LOLViewer.GUI
             this.animationOptionsLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.animationOptionsLabel.AutoSize = true;
             this.animationOptionsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.animationOptionsLabel.Location = new System.Drawing.Point(9, 161);
+            this.animationOptionsLabel.Location = new System.Drawing.Point(9, 119);
             this.animationOptionsLabel.Name = "animationOptionsLabel";
             this.animationOptionsLabel.Size = new System.Drawing.Size(109, 13);
             this.animationOptionsLabel.TabIndex = 18;
@@ -232,7 +227,7 @@ namespace LOLViewer.GUI
             // 
             this.currentAnimationComboBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.currentAnimationComboBox.FormattingEnabled = true;
-            this.currentAnimationComboBox.Location = new System.Drawing.Point(3, 262);
+            this.currentAnimationComboBox.Location = new System.Drawing.Point(3, 220);
             this.currentAnimationComboBox.Name = "currentAnimationComboBox";
             this.currentAnimationComboBox.Size = new System.Drawing.Size(117, 21);
             this.currentAnimationComboBox.TabIndex = 8;
@@ -240,7 +235,7 @@ namespace LOLViewer.GUI
             // playAnimationButton
             // 
             this.playAnimationButton.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.playAnimationButton.Location = new System.Drawing.Point(8, 209);
+            this.playAnimationButton.Location = new System.Drawing.Point(8, 167);
             this.playAnimationButton.Name = "playAnimationButton";
             this.playAnimationButton.Size = new System.Drawing.Size(109, 23);
             this.playAnimationButton.TabIndex = 6;
@@ -251,39 +246,13 @@ namespace LOLViewer.GUI
             // 
             this.timelineTrackBar.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.timelineTrackBar.LargeChange = 10;
-            this.timelineTrackBar.Location = new System.Drawing.Point(3, 238);
+            this.timelineTrackBar.Location = new System.Drawing.Point(3, 196);
             this.timelineTrackBar.Maximum = 100;
             this.timelineTrackBar.Name = "timelineTrackBar";
             this.timelineTrackBar.Size = new System.Drawing.Size(119, 45);
             this.timelineTrackBar.TabIndex = 7;
             this.timelineTrackBar.TabStop = false;
             this.timelineTrackBar.TickStyle = System.Windows.Forms.TickStyle.None;
-            // 
-            // modelScaleLabel
-            // 
-            this.modelScaleLabel.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.modelScaleLabel.AutoSize = true;
-            this.modelScaleLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.modelScaleLabel.Location = new System.Drawing.Point(45, 109);
-            this.modelScaleLabel.Name = "modelScaleLabel";
-            this.modelScaleLabel.Size = new System.Drawing.Size(34, 13);
-            this.modelScaleLabel.TabIndex = 13;
-            this.modelScaleLabel.Text = "Scale";
-            // 
-            // modelScaleTrackbar
-            // 
-            this.modelScaleTrackbar.Anchor = System.Windows.Forms.AnchorStyles.Top;
-            this.modelScaleTrackbar.LargeChange = 50;
-            this.modelScaleTrackbar.Location = new System.Drawing.Point(3, 125);
-            this.modelScaleTrackbar.Maximum = 210;
-            this.modelScaleTrackbar.Minimum = 10;
-            this.modelScaleTrackbar.Name = "modelScaleTrackbar";
-            this.modelScaleTrackbar.Size = new System.Drawing.Size(119, 45);
-            this.modelScaleTrackbar.TabIndex = 4;
-            this.modelScaleTrackbar.TabStop = false;
-            this.modelScaleTrackbar.TickFrequency = 50;
-            this.modelScaleTrackbar.TickStyle = System.Windows.Forms.TickStyle.None;
-            this.modelScaleTrackbar.Value = 110;
             // 
             // fullscreenButton
             // 
@@ -414,7 +383,6 @@ namespace LOLViewer.GUI
             ((System.ComponentModel.ISupportInitialize)(this.glControlTabControlSplitContainer)).EndInit();
             this.glControlTabControlSplitContainer.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.timelineTrackBar)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.modelScaleTrackbar)).EndInit();
             this.glTabModelListBoxSplitContainer.Panel1.ResumeLayout(false);
             this.glTabModelListBoxSplitContainer.Panel2.ResumeLayout(false);
             this.glTabModelListBoxSplitContainer.Panel2.PerformLayout();
@@ -446,8 +414,6 @@ namespace LOLViewer.GUI
         private System.Windows.Forms.Button fullscreenButton;
         private System.Windows.Forms.Button backgroundColorButton;
         private System.Windows.Forms.Button resetCameraButton;
-        private System.Windows.Forms.Label modelScaleLabel;
-        private System.Windows.Forms.TrackBar modelScaleTrackbar;
         private System.Windows.Forms.Button playAnimationButton;
         private System.Windows.Forms.TrackBar timelineTrackBar;
         private System.Windows.Forms.ComboBox currentAnimationComboBox;
