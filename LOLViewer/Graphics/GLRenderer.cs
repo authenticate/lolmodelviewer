@@ -552,7 +552,7 @@ namespace LOLViewer.Graphics
                     for (int i = 0; i < GLRig.MAX_BONES; ++i)
                     {
                         transforms[i] = Matrix4.Scale(1.0f /
-                            riggedModel.rig.bindingJoints[0].scale); //hacky
+                            riggedModel.rig.bindingBones[0].scale); //hacky
                     }
 
                     program.UpdateUniform("u_BoneTransform", transforms);
@@ -581,7 +581,7 @@ namespace LOLViewer.Graphics
             else
             {
                 // Account for the skinning scale if we're not skinning.
-                Matrix4 scale = Matrix4.Scale(riggedModel.rig.bindingJoints[0].scale); //hacky
+                Matrix4 scale = Matrix4.Scale(riggedModel.rig.bindingBones[0].scale); //hacky
                 worldView = scale * world * view;
             }
 
