@@ -93,44 +93,44 @@ namespace LOLViewer.Graphics
     class GLRig
     {
         public const int MAX_BONES = 128;
-        public GLJoint[] bindingJoints;
+        public GLBone[] bindingBones;
 
         private GLBone[] currentFrame;
         private GLBone[] nextFrame;
         
         public GLRig()
         {
-            bindingJoints = new GLJoint[MAX_BONES];
+            bindingBones = new GLBone[MAX_BONES];
             currentFrame = new GLBone[MAX_BONES];
             nextFrame = new GLBone[MAX_BONES];
 
             for (int i = 0; i < MAX_BONES; ++i)
             {
-                bindingJoints[i] = new GLJoint();
+                bindingBones[i] = new GLBone();
                 currentFrame[i] = new GLBone();
                 nextFrame[i] = new GLBone();
             }
         }
 
-        public void Create(List<Quaternion> bOrientation, List<Vector3> bPosition,
-            List<float> bScale, List<int> bParent )
+        public void Create(List<Quaternion> boneOrientations, List<Vector3> bonePositions,
+            List<float> boneScales, List<int> boneParents )
         {
 
-            for (int i = 0; i < bOrientation.Count; ++i)
+            for (int i = 0; i < boneOrientations.Count; ++i)
             {
-                GLJoint joint = new GLJoint();
+                GLBone bone = new GLBone();
 
-                joint.parent = bParent[i];
+                bone.parent = boneParents[i];
 
-                joint.worldPosition = bPosition[i];
-                joint.scale = 1.0f / bScale[i];
-                joint.worldOrientation = bOrientation[i];
+                bone.worldPosition = bonePositions[i];
+                bone.scale = 1.0f / boneScales[i];
+                bone.worldOrientation = boneOrientations[i];
 
-                Matrix4 transform = Matrix4.Rotate(joint.worldOrientation);
-                transform *= Matrix4.CreateTranslation(joint.worldPosition);
-                joint.worldTransform = transform;
+                Matrix4 transform = Matrix4.Rotate(bone.worldOrientation);
+                transform *= Matrix4.CreateTranslation(bone.worldPosition);
+                bone.worldTransform = transform;
 
-                bindingJoints[i] = joint;
+                bindingBones[i] = bone;
             }
         }
 
@@ -144,8 +144,8 @@ namespace LOLViewer.Graphics
         {
             GLBone poseBone = currentFrame[boneID];
 
-            poseBone.parent = bindingJoints[boneID].parent;
-            poseBone.scale = bindingJoints[boneID].scale;
+            poseBone.parent = bindingBones[boneID].parent;
+            poseBone.scale = bindingBones[boneID].scale;
 
             // Is this a root bone?
             if (poseBone.parent == -1)
@@ -186,8 +186,8 @@ namespace LOLViewer.Graphics
         {
             GLBone poseBone = nextFrame[boneID];
 
-            poseBone.parent = bindingJoints[boneID].parent;
-            poseBone.scale = bindingJoints[boneID].scale;
+            poseBone.parent = bindingBones[boneID].parent;
+            poseBone.scale = bindingBones[boneID].scale;
 
             // Is this a root bone?
             if (poseBone.parent == -1)
@@ -231,7 +231,7 @@ namespace LOLViewer.Graphics
             for (int i = 0; i < MAX_BONES; ++i)
             {
                 // Get inverse of original pose.
-                Matrix4 inv = bindingJoints[i].worldTransform;
+                Matrix4 inv = bindingBones[i].worldTransform;
                 inv.Invert();
 
                 //
@@ -255,7 +255,7 @@ namespace LOLViewer.Graphics
 
                 // Update to form final transform.
                 transforms[i] = inv *                                           // invert of default/binding pose
-                    Matrix4.Scale(bindingJoints[i].scale) *                     // invert the bone scale
+                    Matrix4.Scale(bindingBones[i].scale) *                     // invert the bone scale
                     finalTransform;                                             // transform by the current key frame's pose
             }
             
