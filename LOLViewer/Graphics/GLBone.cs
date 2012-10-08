@@ -38,23 +38,27 @@ namespace LOLViewer.Graphics
 {
     class GLBone
     {
+        public String name;
         public int parent;
         public float scale;
-        public Quaternion worldOrientation;
-        public Vector3 worldPosition;
 
-        public String name;
+        public Vector3 worldPosition;
+        public Quaternion worldOrientation;
+        public Matrix4 worldTransform;
+
         public List<GLFrame> frames;
 
         public GLBone()
         {
+            name = String.Empty;
             // -1 reserved for root
             parent = -2;
-            scale = 0.0f;
-            worldOrientation = Quaternion.Identity;
-            worldPosition = Vector3.Zero;
+            scale = 1.0f;
 
-            name = String.Empty;
+            worldPosition = Vector3.Zero;
+            worldOrientation = Quaternion.Identity;
+            worldTransform = Matrix4.Identity;
+
             frames = new List<GLFrame>();
         }
     }
