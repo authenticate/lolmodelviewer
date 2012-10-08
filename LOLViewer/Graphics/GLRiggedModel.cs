@@ -622,7 +622,6 @@ namespace LOLViewer.Graphics
                     GLBone glBone = new GLBone();
 
                     glBone.name = bone.name;
-                    glBone.id = bone.id;
 
                     // Convert ANMFrame to GLFrame.
                     foreach (ANMFrame frame in bone.frames)
@@ -689,12 +688,12 @@ namespace LOLViewer.Graphics
 
                     // For current frame.
                     GLFrame frame = bone.frames[currentFrame];
-                    rig.CalculateWorldSpacePose(0, index, frame.orientation,
+                    rig.CalculateCurrentFramePose(index, frame.orientation,
                         frame.position);
 
                     // For next frame.
                     frame = bone.frames[(currentFrame + 1) % bone.frames.Count];
-                    rig.CalculateWorldSpacePose(1, index, frame.orientation,
+                    rig.CalculateNextFramePose(index, frame.orientation,
                         frame.position);
                 }
                 //else
