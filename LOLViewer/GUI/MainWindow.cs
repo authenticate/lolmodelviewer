@@ -666,7 +666,7 @@ namespace LOLViewer.GUI
             // The default windows forms behavior will intercept the arrow key messages
             // and handle them in the background.  This is normally ideal.  However, here, it would
             // be nice if the search box could change the the selection of the list box.  That way, users
-            // can manipulate the list box while their typing in a search.
+            // can manipulate the list box while they're typing in a search.
             //
 
             // Handle the arrow keys at this point.
