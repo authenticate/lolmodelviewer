@@ -92,7 +92,7 @@ namespace LOLViewer.Graphics
 {
     class GLRig
     {
-        public const int MAX_BONES = 128;
+        private const int MAX_BONES = 128;
         
         private GLBone[] bindingBones;
         private GLBone[] currentFrame;
@@ -196,18 +196,17 @@ namespace LOLViewer.Graphics
                     Vector3.Transform(position, parentBone.worldOrientation);
             }
         }
-
+        
         /// <summary>
         /// Interpolates the animation data between the current frame
         /// and the next frame.
         /// </summary>
-        /// <param name="blend">(Elasped frame time / max frame time)</param>
-        /// <returns></returns>
-        public Matrix4[] GetBoneTransformations(float blend)
+        /// <param name="blend">Elasped frame time / max frame time)</param>
+        /// <param name="transforms">A preallocated array of transformation matrices.</param>
+        /// <returns>The resultant bone transformation.  This value is identical to the reference parameter result.</returns>
+        public Matrix4[] GetBoneTransformations(float blend, ref Matrix4[] transforms)
         {
-            Matrix4[] transforms = new Matrix4[MAX_BONES];
-
-            for (int i = 0; i < MAX_BONES; ++i)
+            for (int i = 0; i < transforms.Length; ++i)
             {
                 //
                 // Interpolate between the current frame
