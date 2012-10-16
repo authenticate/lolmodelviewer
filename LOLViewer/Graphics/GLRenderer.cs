@@ -64,7 +64,28 @@ namespace LOLViewer.Graphics
         private OpenTK.Graphics.Color4 clearColor = new OpenTK.Graphics.Color4(0.1f, 0.2f, 0.5f, 0);
 
         // Skinning Identities. Used when animation mode is disabled.
-        public bool IsSkinning { get; set; }
+        public bool IsSkinning 
+        {
+            get
+            {
+                return isSkinning;
+            }
+
+            set
+            {
+                isSkinning = value;
+
+                // If we have turned off the skinning pipeline, we need set all the transforms to the identity.
+                if (isSkinning == false)
+                {
+                    for (int i = 0; i < boneTransforms.Length; ++i)
+                    {
+                        boneTransforms[i] = Matrix4.Identity;
+                    }
+                }
+            }
+        }
+        private bool isSkinning;
 
         // Shader Variables
         private Dictionary<String, GLShaderProgram> programs;
@@ -73,7 +94,10 @@ namespace LOLViewer.Graphics
         // Geometry Variables
         private GLBillboard billboard;
         private GLStaticModel staticModel;
+
         private GLRiggedModel riggedModel;
+        private Matrix4[] boneTransforms;
+        private const int MAX_BONE_TRANSFORMS = 128;
 
         // Texture Variables
         private Dictionary<String, GLTexture> textures;
@@ -95,11 +119,13 @@ namespace LOLViewer.Graphics
 
             billboard = new GLBillboard();
             staticModel = new GLStaticModel();
+
             riggedModel = new GLRiggedModel();
+            boneTransforms = new Matrix4[MAX_BONE_TRANSFORMS];
 
             textures = new Dictionary<String, GLTexture>();
 
-            IsSkinning = false;
+            isSkinning = false;
 
             Reset();
         }
@@ -514,17 +540,13 @@ namespace LOLViewer.Graphics
             // Bone Transforms
             //
 
-            Matrix4[] transforms = riggedModel.GetBoneTransformations();
-            if (transforms == null || IsSkinning == false)
+            if (IsSkinning == true)
             {
-                transforms = new Matrix4[GLRig.MAX_BONES];
-                for (int i = 0; i < GLRig.MAX_BONES; ++i)
-                {
-                    transforms[i] = Matrix4.Identity;
-                }
+                // Get the transformations from the rig.
+                boneTransforms = riggedModel.GetBoneTransformations(ref boneTransforms);
             }
 
-            program.UpdateUniform("u_BoneTransform", transforms);
+            program.UpdateUniform("u_BoneTransform", boneTransforms);
 
             //
             // World Transform.

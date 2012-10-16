@@ -352,38 +352,61 @@ namespace LOLViewer.Graphics
             }
         }
 
-        public Matrix4[] GetBoneTransformations()
+        /// <summary>
+        /// Computes the bone transformations for the model.
+        /// </summary>
+        /// <param name="transforms">A preallocated array of transformation matrices.</param>
+        /// <returns>The resultant bone transformation.  This value is identical to the reference parameter result.</returns>
+        public Matrix4[] GetBoneTransformations(ref Matrix4[] transforms)
         {
             // Sanity.
-            if (animations.ContainsKey(currentAnimation) == false)
+            if (animations.ContainsKey(currentAnimation) == true)
             {
-                return null;
-            }
+                //
+                // Normal Case
+                //
 
-            foreach (GLBone bone in animations[currentAnimation].bones)
-            {
-                if (boneNameToIndex.ContainsKey(bone.name))
+                // Update the rig.
+                foreach (GLBone bone in animations[currentAnimation].bones)
                 {
-                    int index = boneNameToIndex[bone.name];
-                                        
-                    // For current frame.
-                    GLFrame frame = bone.frames[currentFrame];
-                    rig.CalculateCurrentFramePose(index, frame.orientation,
-                        frame.position);
+                    if (boneNameToIndex.ContainsKey(bone.name))
+                    {
+                        int index = boneNameToIndex[bone.name];
 
-                    // For next frame.
-                    frame = bone.frames[(currentFrame + 1) % bone.frames.Count];
-                    rig.CalculateNextFramePose(index, frame.orientation,
-                        frame.position);
+                        // For current frame.
+                        GLFrame frame = bone.frames[currentFrame];
+                        rig.CalculateCurrentFramePose(index, frame.orientation,
+                            frame.position);
+
+                        // For next frame.
+                        frame = bone.frames[(currentFrame + 1) % bone.frames.Count];
+                        rig.CalculateNextFramePose(index, frame.orientation,
+                            frame.position);
+                    }
+                    //else
+
+                    // Not sure what to do if it doesn't contain the bone.
+                    // Last time I checked, this does happen more frequently that I'd like to ignore.
+                    // It's probably why certain models don't animate properly.
                 }
-                //else
 
-                // Not sure what to do if it doesn't contain the bone.
-                // Last time I checked, this does happen more frequently that I'd like to ignore.
-                // It's probably why certain models don't animate properly.
+                // Retrieve the transforms from the rig.
+                float blend = currentFrameTime / animations[currentAnimation].timePerFrame;
+                transforms = rig.GetBoneTransformations(blend, ref transforms);
+            }
+            else
+            {
+                //
+                // Case when the animation is not present.
+                //
+
+                for (int i = 0; i < transforms.Length; ++i)
+                {
+                    transforms[i] = Matrix4.Identity;
+                }
             }
 
-            return rig.GetBoneTransformations( currentFrameTime / animations[currentAnimation].timePerFrame );
+            return transforms;
         }
 
         public uint GetNumberOfFramesInCurrentAnimation()
