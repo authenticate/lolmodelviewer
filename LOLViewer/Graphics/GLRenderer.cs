@@ -661,8 +661,8 @@ namespace LOLViewer.Graphics
         /// Sets the current frame in the animation.
         /// </summary>
         /// <param name="frame">The frame number.</param>
-        /// <param name="percentTowardsNextFrame">The percent til the next frame is shown. Expects a value between 0 and 1.</param>
-        public void SetFrameInCurrentAnimation(int frame, float percentTowardsNextFrame)
+        /// <param name="percentTowardsNextFrame">The percent til the next frame is shown. Expects a value between 0 - 1.</param>
+        public void SetCurrentFrameInCurrentAnimation(int frame, float percentTowardsNextFrame)
         {
             riggedModel.SetCurrentFrame(frame, percentTowardsNextFrame);
         }
@@ -688,7 +688,7 @@ namespace LOLViewer.Graphics
         {
             float result = 0.0f;
 
-            result = riggedModel.GetPercentageAnimated();
+            result = riggedModel.GetPercentAnimated();
 
             return result;
         }
