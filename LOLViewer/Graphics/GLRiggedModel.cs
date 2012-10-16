@@ -403,7 +403,12 @@ namespace LOLViewer.Graphics
             return result;
         }
 
-        public void SetCurrentFrame( int frame, float percentTowardsNextFrame )
+        /// <summary>
+        /// Sets the current frame.
+        /// </summary>
+        /// <param name="frame">The index of the frame.</param>
+        /// <param name="percentTowardsNextFrame">The percent towards the next frame.  Expects a number between 0 - 1.</param>
+        public void SetCurrentFrame(int frame, float percentTowardsNextFrame)
         {  
             if (animations.ContainsKey(currentAnimation) == true)
             {
@@ -425,7 +430,7 @@ namespace LOLViewer.Graphics
         /// function will return .5.
         /// </summary>
         /// <returns></returns>
-        public float GetPercentageAnimated()
+        public float GetPercentAnimated()
         {
             float result = 0.0f;
 

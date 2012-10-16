@@ -196,7 +196,7 @@ namespace LOLViewer.GUI
             int selectedFrame = (int)Math.Floor( frameAbsolute );
             float percentTowardsNextFrame = frameAbsolute - selectedFrame;
 
-            renderer.SetFrameInCurrentAnimation(selectedFrame, percentTowardsNextFrame);
+            renderer.SetCurrentFrameInCurrentAnimation(selectedFrame, percentTowardsNextFrame);
 
             // Redraw the model.
             glControlMain.Invalidate();
