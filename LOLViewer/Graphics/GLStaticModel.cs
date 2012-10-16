@@ -46,8 +46,9 @@ namespace LOLViewer.Graphics
 {
     class GLStaticModel
     {
+        public String TextureName { get; set; }
+
         private int numIndices;
-        public String textureName;
 
         // OpenGL objects.
         private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer;
@@ -55,7 +56,7 @@ namespace LOLViewer.Graphics
         public GLStaticModel() 
         {
             vao = vertexPositionBuffer = indexBuffer = vertexTextureCoordinateBuffer = vertexNormalBuffer = numIndices = 0;
-            textureName = String.Empty;
+            TextureName = String.Empty;
         }
 
         public bool Create(SKNFile file, Logger logger)

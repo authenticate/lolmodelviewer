@@ -82,7 +82,7 @@ namespace LOLViewer.GUI
             playAnimationButton.Enabled = false;
             timelineTrackBar.Enabled = false;
 
-            renderer.isSkinning = false;
+            renderer.IsSkinning = false;
         }
 
         private void EnableAnimation()
@@ -100,7 +100,7 @@ namespace LOLViewer.GUI
                 playAnimationButton.Enabled = true;
                 timelineTrackBar.Enabled = true;
 
-                renderer.isSkinning = true;
+                renderer.IsSkinning = true;
             }
             else
             {

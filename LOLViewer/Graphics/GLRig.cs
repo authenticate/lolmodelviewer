@@ -93,8 +93,8 @@ namespace LOLViewer.Graphics
     class GLRig
     {
         public const int MAX_BONES = 128;
-        public GLBone[] bindingBones;
-
+        
+        private GLBone[] bindingBones;
         private GLBone[] currentFrame;
         private GLBone[] nextFrame;
         
