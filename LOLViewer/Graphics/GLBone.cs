@@ -41,9 +41,9 @@ namespace LOLViewer.Graphics
         public String name;
         public int parent;
 
-        public Vector3 worldPosition;
-        public Quaternion worldOrientation;
-        public Matrix4 worldTransform;
+        public Vector3 position;
+        public Quaternion orientation;
+        public Matrix4 transform;
 
         public List<GLFrame> frames;
 
@@ -53,9 +53,9 @@ namespace LOLViewer.Graphics
             // -1 reserved for root
             parent = -2;
 
-            worldPosition = Vector3.Zero;
-            worldOrientation = Quaternion.Identity;
-            worldTransform = Matrix4.Identity;
+            position = Vector3.Zero;
+            orientation = Quaternion.Identity;
+            transform = Matrix4.Identity;
 
             frames = new List<GLFrame>();
         }

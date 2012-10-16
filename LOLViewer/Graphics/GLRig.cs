@@ -128,12 +128,12 @@ namespace LOLViewer.Graphics
 
                 bone.parent = boneParents[i];
 
-                bone.worldPosition = bonePositions[i];
-                bone.worldOrientation = boneOrientations[i];
+                bone.position = bonePositions[i];
+                bone.orientation = boneOrientations[i];
 
-                Matrix4 transform = Matrix4.Rotate(bone.worldOrientation);
-                transform *= Matrix4.CreateTranslation(bone.worldPosition);
-                bone.worldTransform = transform;
+                Matrix4 transform = Matrix4.Rotate(bone.orientation);
+                transform *= Matrix4.CreateTranslation(bone.position);
+                bone.transform = transform;
 
                 bindingBones[i] = bone;
             }
@@ -275,12 +275,12 @@ namespace LOLViewer.Graphics
                 //
 
                 // Interpolate Orientations
-                Quaternion finalOrientation = Quaternion.Slerp(currentFrames[i].worldOrientation,
-                    nextFrames[i].worldOrientation, blend);
+                Quaternion finalOrientation = Quaternion.Slerp(currentFrames[i].orientation,
+                    nextFrames[i].orientation, blend);
 
                 // Interpolate Positions
-                Vector3 finalPosition = Vector3.Lerp(currentFrames[i].worldPosition,
-                    nextFrames[i].worldPosition, blend);
+                Vector3 finalPosition = Vector3.Lerp(currentFrames[i].position,
+                    nextFrames[i].position, blend);
 
                 // Store
                 Matrix4 finalTransform = Matrix4.Rotate(finalOrientation);
@@ -289,7 +289,7 @@ namespace LOLViewer.Graphics
                 finalTransform.M43 = finalPosition.Z;
 
                 // Invert binding bone to compute the result.
-                Matrix4 inverse = Matrix4.Invert(bindingBones[i].worldTransform);                
+                Matrix4 inverse = Matrix4.Invert(bindingBones[i].transform);                
                 transforms[i] = inverse * finalTransform;                               
             }
             
@@ -314,14 +314,14 @@ namespace LOLViewer.Graphics
             if (parentBone != null)
             {
                 // Append quaternions for rotation transform B * A
-                poseBone.worldOrientation = parentBone.worldOrientation * frame.orientation;
-                poseBone.worldPosition = parentBone.worldPosition + Vector3.Transform(frame.position, parentBone.worldOrientation);
+                poseBone.orientation = parentBone.orientation * frame.orientation;
+                poseBone.position = parentBone.position + Vector3.Transform(frame.position, parentBone.orientation);
             }
             // Root bone case.
             else
             {
-                poseBone.worldPosition = frame.position;
-                poseBone.worldOrientation = frame.orientation;
+                poseBone.position = frame.position;
+                poseBone.orientation = frame.orientation;
             }
 
             return poseBone;
