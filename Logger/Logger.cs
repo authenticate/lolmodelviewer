@@ -64,7 +64,7 @@ namespace CSharpLogger
             try
             {
                 if (writer == null || writer.BaseStream == null)
-                    writer = new StreamWriter(filePath, true);
+                    writer = new StreamWriter(filePath);
 
                 writer.Write(builder);
                 builder.Clear();
