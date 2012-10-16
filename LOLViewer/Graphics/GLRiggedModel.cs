@@ -72,15 +72,15 @@ namespace LOLViewer.Graphics
         private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer,
             vertexBoneBuffer, vertexBoneWeightBuffer;
 
-        private Dictionary<String, int> boneNameToIndex;
-        private Dictionary<int, String> boneIndexToName; 
+        private Dictionary<String, int> boneNameToID;
+        private Dictionary<int, String> boneIDToName; 
 
         private String currentAnimation;
         private float currentFrameTime;
         private int currentFrame;
         private Dictionary<String, GLAnimation> animations;
 
-        public GLRiggedModel()
+        public GLRiggedModel(int maximumNumberOfBones)
         {
             version = 0;
             TextureName = String.Empty;
@@ -88,10 +88,10 @@ namespace LOLViewer.Graphics
             vao = vertexPositionBuffer = indexBuffer = vertexTextureCoordinateBuffer = vertexNormalBuffer = 
                 numIndices = vertexBoneBuffer = vertexBoneWeightBuffer = 0;
 
-            rig = new GLRig();
+            rig = new GLRig(maximumNumberOfBones);
 
-            boneNameToIndex = new Dictionary<String, int>();
-            boneIndexToName = new Dictionary<int, String>();
+            boneNameToID = new Dictionary<String, int>();
+            boneIDToName = new Dictionary<int, String>();
 
             currentAnimation = String.Empty;
             currentFrameTime = 0.0f;
@@ -334,6 +334,8 @@ namespace LOLViewer.Graphics
             currentAnimation = name;
             currentFrameTime = 0.0f;
             currentFrame = 0;
+
+            rig.Reset();
         }
 
         public void Update(float elapsedTime)
@@ -367,28 +369,8 @@ namespace LOLViewer.Graphics
                 //
 
                 // Update the rig.
-                foreach (GLBone bone in animations[currentAnimation].bones)
-                {
-                    if (boneNameToIndex.ContainsKey(bone.name))
-                    {
-                        int index = boneNameToIndex[bone.name];
-
-                        // For current frame.
-                        GLFrame frame = bone.frames[currentFrame];
-                        rig.CalculateCurrentFramePose(index, frame.orientation,
-                            frame.position);
-
-                        // For next frame.
-                        frame = bone.frames[(currentFrame + 1) % bone.frames.Count];
-                        rig.CalculateNextFramePose(index, frame.orientation,
-                            frame.position);
-                    }
-                    //else
-
-                    // Not sure what to do if it doesn't contain the bone.
-                    // Last time I checked, this does happen more frequently that I'd like to ignore.
-                    // It's probably why certain models don't animate properly.
-                }
+                rig.UpdateBoneTransformations(currentFrame, (int)animations[currentAnimation].numberOfFrames, 
+                    animations[currentAnimation].bones, boneNameToID);
 
                 // Retrieve the transforms from the rig.
                 float blend = currentFrameTime / animations[currentAnimation].timePerFrame;
@@ -430,6 +412,8 @@ namespace LOLViewer.Graphics
 
                 // Set elapsed time towards the next frame.
                 currentFrameTime = percentTowardsNextFrame * animations[currentAnimation].timePerFrame;
+
+                rig.Reset();
             }
         }
 
@@ -524,10 +508,10 @@ namespace LOLViewer.Graphics
             for (int i = 0; i < boneOrientations.Count; ++i)
             {
                 // Sanity
-                if (boneNameToIndex.ContainsKey(boneNames[i]) == false)
+                if (boneNameToID.ContainsKey(boneNames[i]) == false)
                 {
-                    boneNameToIndex.Add(boneNames[i], i);
-                    boneIndexToName.Add(i, boneNames[i]);
+                    boneNameToID.Add(boneNames[i], i);
+                    boneIDToName.Add(i, boneNames[i]);
                 }
             }
 
