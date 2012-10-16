@@ -133,6 +133,10 @@ namespace LOLViewer.Graphics
 
                 Matrix4 transform = Matrix4.Rotate(bone.orientation);
                 transform *= Matrix4.CreateTranslation(bone.position);
+
+                // Invert the binding bone's transform here instead of every frame.
+                transform = Matrix4.Invert(transform);
+                
                 bone.transform = transform;
 
                 bindingBones[i] = bone;
@@ -288,9 +292,8 @@ namespace LOLViewer.Graphics
                 finalTransform.M42 = finalPosition.Y;
                 finalTransform.M43 = finalPosition.Z;
 
-                // Invert binding bone to compute the result.
-                Matrix4 inverse = Matrix4.Invert(bindingBones[i].transform);                
-                transforms[i] = inverse * finalTransform;                               
+                // Compute the result.
+                transforms[i] = bindingBones[i].transform * finalTransform;                               
             }
             
             return transforms;
