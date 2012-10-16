@@ -46,13 +46,28 @@ namespace LOLViewer.Graphics
 {
     class GLRiggedModel
     {
-        private int version;
-        public String textureName;
+        public String TextureName { get; set; }
+        public List<String> AnimationNames
+        {
+            get
+            {
+                List<String> result = new List<String>();
 
-        public GLRig rig;
+                foreach (var animation in animations)
+                {
+                    result.Add(animation.Key);
+                }
+
+                return result;
+            }
+        }
+
+        private int version;
+
+        private GLRig rig;
 
         private int numIndices;
-
+        
         // OpenGL objects.
         private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer,
             vertexBoneBuffer, vertexBoneWeightBuffer;
@@ -62,13 +77,13 @@ namespace LOLViewer.Graphics
 
         private String currentAnimation;
         private float currentFrameTime;
-        public int currentFrame;
-        public Dictionary<String, GLAnimation> animations;
+        private int currentFrame;
+        private Dictionary<String, GLAnimation> animations;
 
         public GLRiggedModel()
         {
             version = 0;
-            textureName = String.Empty;
+            TextureName = String.Empty;
 
             vao = vertexPositionBuffer = indexBuffer = vertexTextureCoordinateBuffer = vertexNormalBuffer = 
                 numIndices = vertexBoneBuffer = vertexBoneWeightBuffer = 0;

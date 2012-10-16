@@ -63,6 +63,9 @@ namespace LOLViewer.Graphics
         }
         private OpenTK.Graphics.Color4 clearColor = new OpenTK.Graphics.Color4(0.1f, 0.2f, 0.5f, 0);
 
+        // Skinning Identities. Used when animation mode is disabled.
+        public bool IsSkinning { get; set; }
+
         // Shader Variables
         private Dictionary<String, GLShaderProgram> programs;
         private Dictionary<String, GLShader> shaders;
@@ -83,9 +86,6 @@ namespace LOLViewer.Graphics
         // Can't actually declare as a const.
         private Vector3 DEFAULT_MODEL_TRANSLATION = new Vector3(0, -50, 0);
 
-        // Skinning Identities. Used when animation mode is disabled.
-        public bool isSkinning;
-
         #region Initialization
 
         public GLRenderer()
@@ -99,7 +99,7 @@ namespace LOLViewer.Graphics
 
             textures = new Dictionary<String, GLTexture>();
 
-            isSkinning = false;
+            IsSkinning = false;
 
             Reset();
         }
@@ -467,9 +467,9 @@ namespace LOLViewer.Graphics
             // Load the model's texture for the shader.
             GL.ActiveTexture(TextureUnit.Texture0);
             program.UpdateUniform("u_Texture", 0);
-            if (staticModel.textureName != String.Empty)
+            if (staticModel.TextureName != String.Empty)
             {
-                textures[staticModel.textureName].Bind(); // not checking return value        
+                textures[staticModel.TextureName].Bind(); // not checking return value        
             }
 
             staticModel.Draw();
@@ -505,9 +505,9 @@ namespace LOLViewer.Graphics
             // Textures vary.
             GL.ActiveTexture(TextureUnit.Texture0);
             program.UpdateUniform("u_Texture", 0);
-            if (riggedModel.textureName != String.Empty)
+            if (riggedModel.TextureName != String.Empty)
             {
-                textures[riggedModel.textureName].Bind(); // not checking return value        
+                textures[riggedModel.TextureName].Bind(); // not checking return value        
             }
 
             //
@@ -515,7 +515,7 @@ namespace LOLViewer.Graphics
             //
 
             Matrix4[] transforms = riggedModel.GetBoneTransformations();
-            if (transforms == null || isSkinning == false)
+            if (transforms == null || IsSkinning == false)
             {
                 transforms = new Matrix4[GLRig.MAX_BONES];
                 for (int i = 0; i < GLRig.MAX_BONES; ++i)
@@ -632,14 +632,7 @@ namespace LOLViewer.Graphics
         /// <returns></returns>
         public List<String> GetAnimations()
         {
-            List<String> result = new List<String>();
-
-            foreach (var animation in riggedModel.animations)
-            {
-                result.Add(animation.Key);
-            }
-
-            return result;
+            return riggedModel.AnimationNames;
         }
 
         /// <summary>
@@ -1015,7 +1008,7 @@ namespace LOLViewer.Graphics
                     int pos = name.LastIndexOf("/");
                     name = name.Substring(pos + 1);
 
-                    staticModel.textureName = name;
+                    staticModel.TextureName = name;
                 }
             }
 
@@ -1068,7 +1061,7 @@ namespace LOLViewer.Graphics
                     int pos = name.LastIndexOf("/");
                     name = name.Substring(pos + 1);
 
-                    riggedModel.textureName = name;
+                    riggedModel.TextureName = name;
                 }
             }
 
@@ -1111,7 +1104,7 @@ namespace LOLViewer.Graphics
                     }
                 }
 
-                riggedModel.currentFrame = 0;
+                riggedModel.SetCurrentFrame(0, 0);
             }
 
             if (result == false)
