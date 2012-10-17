@@ -164,8 +164,8 @@ namespace LOLViewer.Graphics
                 // Update the number of bones.
                 numberOfBones = bones.Count;
 
-                int nextFrameID = (currentFrame + 1) % maxFrames;
-                if (frameID == nextFrameID && currentFrame != -1)
+                int nextFrameID = (frameID + 1) % maxFrames;
+                if (currentFrame + 1 == nextFrameID && currentFrame != -1)
                 {
                     //
                     // Normal Case. Increment to the next frame.
