@@ -80,6 +80,8 @@ namespace LOLViewer.Graphics
         private int currentFrame;
         private Dictionary<String, GLAnimation> animations;
 
+        #region Initialization
+
         public GLRiggedModel(int maximumNumberOfBones)
         {
             version = 0;
@@ -105,7 +107,7 @@ namespace LOLViewer.Graphics
         /// <param name="skn">The .skn data.</param>
         /// <param name="skl">The .skl data.</param>
         /// <returns></returns>
-        public bool Create(SKNFile skn, SKLFile skl, Logger logger)
+        public bool Create(SKNFile skn, SKLFile skl, Dictionary<String, ANMFile> anms, Logger logger)
         {
             bool result = true;
 
@@ -269,6 +271,51 @@ namespace LOLViewer.Graphics
                 indices.Add((uint)skn.indices[i]);
             }
 
+            // Add the animations.
+            foreach (var animation in anms)
+            {
+                if (animations.ContainsKey(animation.Key) == false)
+                {
+                    // Create the OpenGL animation wrapper.
+                    GLAnimation glAnimation = new GLAnimation();
+
+                    glAnimation.playbackFPS = animation.Value.playbackFPS;
+                    glAnimation.numberOfBones = animation.Value.numberOfBones;
+                    glAnimation.numberOfFrames = animation.Value.numberOfFrames;
+
+                    // Convert ANMBone to GLBone.
+                    foreach (ANMBone bone in animation.Value.bones)
+                    {
+                        GLBone glBone = new GLBone();
+
+                        glBone.name = bone.name;
+
+                        // Convert ANMFrame to GLFrame.
+                        foreach (ANMFrame frame in bone.frames)
+                        {
+                            GLFrame glFrame = new GLFrame();
+                            glFrame.position.X = frame.position[0];
+                            glFrame.position.Y = frame.position[1];
+                            glFrame.position.Z = -frame.position[2];
+
+                            glFrame.orientation.X = frame.orientation[0];
+                            glFrame.orientation.Y = frame.orientation[1];
+                            glFrame.orientation.Z = -frame.orientation[2];
+                            glFrame.orientation.W = -frame.orientation[3];
+
+                            glBone.frames.Add(glFrame);
+                        }
+
+                        glAnimation.bones.Add(glBone);
+                    }
+
+                    glAnimation.timePerFrame = 1.0f / (float)animation.Value.playbackFPS;
+
+                    // Store the animation.
+                    animations.Add(animation.Key, glAnimation);
+                }
+            }
+
             // Create
             result = Create((int)skl.version, vertexPositions, vertexNormals, vertexTextureCoordinates,
                 vertexBoneIndices, vertexBoneWeights, indices, boneOrientations, bonePositions,
@@ -277,65 +324,16 @@ namespace LOLViewer.Graphics
             return result;
         }
 
+#endregion
+
+        #region Rendering API
+
         public void Draw()
         {
             GL.BindVertexArray(vao);
 
             GL.DrawElements(BeginMode.Triangles, numIndices,
                 DrawElementsType.UnsignedInt, 0);
-        }
-
-        public void AddAnimation(String name, ANMFile animation)
-        {
-            if (animations.ContainsKey(name) == false)
-            {
-                // Create the OpenGL animation wrapper.
-                GLAnimation glAnimation = new GLAnimation();
-
-                glAnimation.playbackFPS = animation.playbackFPS;
-                glAnimation.numberOfBones = animation.numberOfBones;
-                glAnimation.numberOfFrames = animation.numberOfFrames;
-
-                // Convert ANMBone to GLBone.
-                foreach (ANMBone bone in animation.bones)
-                {
-                    GLBone glBone = new GLBone();
-
-                    glBone.name = bone.name;
-
-                    // Convert ANMFrame to GLFrame.
-                    foreach (ANMFrame frame in bone.frames)
-                    {
-                        GLFrame glFrame = new GLFrame();
-                        glFrame.position.X = frame.position[0];
-                        glFrame.position.Y = frame.position[1];
-                        glFrame.position.Z = -frame.position[2];
-
-                        glFrame.orientation.X = frame.orientation[0];
-                        glFrame.orientation.Y = frame.orientation[1];
-                        glFrame.orientation.Z = -frame.orientation[2];
-                        glFrame.orientation.W = -frame.orientation[3];
-
-                        glBone.frames.Add(glFrame);
-                    }
-
-                    glAnimation.bones.Add(glBone);
-                }
-
-                glAnimation.timePerFrame = 1.0f / (float)animation.playbackFPS;
-
-                // Store the animation.
-                animations.Add(name, glAnimation);
-            }
-        }
-
-        public void SetCurrentAnimation(String name)
-        {
-            currentAnimation = name;
-            currentFrameTime = 0.0f;
-            currentFrame = 0;
-
-            rig.Reset();
         }
 
         public void Update(float elapsedTime)
@@ -369,7 +367,7 @@ namespace LOLViewer.Graphics
                 //
 
                 // Update the rig.
-                rig.UpdateBoneTransformations(currentFrame, (int)animations[currentAnimation].numberOfFrames, 
+                rig.UpdateBoneTransformations(currentFrame, (int)animations[currentAnimation].numberOfFrames,
                     animations[currentAnimation].bones, boneNameToID);
 
                 // Retrieve the transforms from the rig.
@@ -389,58 +387,6 @@ namespace LOLViewer.Graphics
             }
 
             return transforms;
-        }
-
-        public uint GetNumberOfFramesInCurrentAnimation()
-        {
-            uint result = 0;
-
-            if (animations.ContainsKey(currentAnimation) == true)
-            {
-                result = animations[currentAnimation].numberOfFrames;
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Sets the current frame.
-        /// </summary>
-        /// <param name="frame">The index of the frame.</param>
-        /// <param name="percentTowardsNextFrame">The percent towards the next frame.  Expects a number between 0 - 1.</param>
-        public void SetCurrentFrame(int frame, float percentTowardsNextFrame)
-        {  
-            if (animations.ContainsKey(currentAnimation) == true)
-            {
-                // Set frame.
-                currentFrame = frame % (int)animations[currentAnimation].numberOfFrames;
-
-                // Set elapsed time towards the next frame.
-                currentFrameTime = percentTowardsNextFrame * animations[currentAnimation].timePerFrame;
-
-                rig.Reset();
-            }
-        }
-
-        /// <summary>
-        /// Returns a decimal representing the percent
-        /// of the current animation already animated.
-        /// 
-        /// I.E. If the currentFrame = 5 with an animation containing 10 frames, this
-        /// function will return .5.
-        /// </summary>
-        /// <returns></returns>
-        public float GetPercentAnimated()
-        {
-            float result = 0.0f;
-
-            if (animations.ContainsKey(currentAnimation) == true)
-            {
-                float absoluteFrame = (float)currentFrame + (currentFrameTime / animations[currentAnimation].timePerFrame);
-                result = absoluteFrame / (float)animations[currentAnimation].numberOfFrames;
-            }
-
-            return result;
         }
 
         public void Destroy()
@@ -490,9 +436,75 @@ namespace LOLViewer.Graphics
             numIndices = 0;
         }
 
-        //
-        // Helper Functions
-        //
+
+#endregion
+
+        #region Animation API
+
+        public void SetCurrentAnimation(String name)
+        {
+            currentAnimation = name;
+            currentFrameTime = 0.0f;
+            currentFrame = 0;
+
+            rig.Reset();
+        }
+
+        /// <summary>
+        /// Sets the current frame.
+        /// </summary>
+        /// <param name="frame">The index of the frame.</param>
+        /// <param name="percentTowardsNextFrame">The percent towards the next frame.  Expects a number between 0 - 1.</param>
+        public void SetCurrentFrame(int frame, float percentTowardsNextFrame)
+        {
+            if (animations.ContainsKey(currentAnimation) == true)
+            {
+                // Set frame.
+                currentFrame = frame % (int)animations[currentAnimation].numberOfFrames;
+
+                // Set elapsed time towards the next frame.
+                currentFrameTime = percentTowardsNextFrame * animations[currentAnimation].timePerFrame;
+
+                rig.Reset();
+            }
+        }
+
+        public uint GetNumberOfFramesInCurrentAnimation()
+        {
+            uint result = 0;
+
+            if (animations.ContainsKey(currentAnimation) == true)
+            {
+                result = animations[currentAnimation].numberOfFrames;
+            }
+
+            return result;
+        }        
+
+        /// <summary>
+        /// Returns a decimal representing the percent
+        /// of the current animation already animated.
+        /// 
+        /// I.E. If the currentFrame = 5 with an animation containing 10 frames, this
+        /// function will return .5.
+        /// </summary>
+        /// <returns></returns>
+        public float GetPercentAnimated()
+        {
+            float result = 0.0f;
+
+            if (animations.ContainsKey(currentAnimation) == true)
+            {
+                float absoluteFrame = (float)currentFrame + (currentFrameTime / animations[currentAnimation].timePerFrame);
+                result = absoluteFrame / (float)animations[currentAnimation].numberOfFrames;
+            }
+
+            return result;
+        }
+
+        #endregion
+
+        #region Helpers
 
         private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
             List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights,
@@ -807,5 +819,7 @@ namespace LOLViewer.Graphics
 
             return result;
         }
+
+#endregion
     }
 }

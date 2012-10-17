@@ -1048,23 +1048,50 @@ namespace LOLViewer.Graphics
 
             logger.Event("Creating rigged model.");
 
+            // Open the skn file.
             SKNFile sknFile = new SKNFile();
             if (result == true)
             {
-                // Model is stored in a RAF.
                 result = SKNReader.Read(model.skn, ref sknFile, logger);
             }
 
+            // Open the skl file.
             SKLFile sklFile = new SKLFile();
             if (result == true)
             {
                 result = SKLReader.Read(model.skl, ref sklFile, logger);
             }
 
+            // Open the anm files.
+            Dictionary<String, ANMFile> anmFiles = new Dictionary<String, ANMFile>();
+            if (result == true)
+            {
+                foreach (var a in model.animations)
+                {
+                    ANMFile anmFile = new ANMFile();
+                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, logger);
+                    if (anmResult == true)
+                    {
+                        anmFiles.Add(a.Key, anmFile);
+                    }
+                }
+            }
+
+            // Create the model.
             riggedModel = new GLRiggedModel(MAX_BONE_TRANSFORMS);
             if (result == true)
             {
-                result = riggedModel.Create(sknFile, sklFile, logger);
+                result = riggedModel.Create(sknFile, sklFile, anmFiles, logger);
+            }
+
+            // Set up an initial animation.
+            if (result == true)
+            {
+                if (anmFiles.Count > 0)
+                {
+                    riggedModel.SetCurrentAnimation(anmFiles.First().Key);
+                    riggedModel.SetCurrentFrame(0, 0);
+                }
             }
 
             //
@@ -1085,48 +1112,6 @@ namespace LOLViewer.Graphics
 
                     riggedModel.TextureName = name;
                 }
-            }
-
-            //
-            // Load up the model animations
-            //
-            if (result == true)
-            {
-                //
-                // This code used to be in LOLDirectoryReader.
-                // However, it takes awhile to parse all the animation files
-                // for all the models.  So, I decided not to preload all of this
-                // data and only load it when a model needs to be displayed.
-                //
-
-                Dictionary<String, ANMFile> animationFiles =
-                    new Dictionary<String, ANMFile>();
-
-                // Read in the animation files.
-                foreach (var a in model.animations)
-                {
-                    ANMFile anmFile = new ANMFile();
-                    bool anmResult = ANMReader.Read(a.Value, ref anmFile, logger);
-                    if (anmResult == true)
-                    {
-                        animationFiles.Add(a.Key, anmFile);
-                    }
-                }
-
-                bool currentSet = false;
-                foreach (var a in animationFiles)
-                {
-                    riggedModel.AddAnimation(a.Key, a.Value);
-
-                    // Set a default animation.
-                    if (currentSet == false)
-                    {
-                        riggedModel.SetCurrentAnimation(a.Key);
-                        currentSet = true;
-                    }
-                }
-
-                riggedModel.SetCurrentFrame(0, 0);
             }
 
             if (result == false)
