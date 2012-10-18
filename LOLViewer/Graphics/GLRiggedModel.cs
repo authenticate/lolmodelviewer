@@ -257,10 +257,6 @@ namespace LOLViewer.Graphics
                     {
                         vertexBoneIndices[i] = skl.boneIDs[(int)vertexBoneIndices[i]];
                     }
-                    else
-                    {
-                        vertexBoneIndices[i] = 0;
-                    }
                 }
             }
 
