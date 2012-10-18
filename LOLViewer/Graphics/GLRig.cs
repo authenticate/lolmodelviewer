@@ -117,7 +117,7 @@ namespace LOLViewer.Graphics
                 currentFrames[i] = new GLBone();
                 nextFrames[i] = new GLBone();
             }
-        }
+        }   
 
         public void Create(List<Quaternion> boneOrientations, List<Vector3> bonePositions,
             List<float> boneScales, List<int> boneParents )
@@ -131,12 +131,22 @@ namespace LOLViewer.Graphics
                 bone.position = bonePositions[i];
                 bone.orientation = boneOrientations[i];
 
-                Matrix4 transform = Matrix4.Rotate(bone.orientation);
+                // If the quaternion creates the zero vector as an axis,
+                // just leave the transform as the identity.  Trying to calculate the transform
+                // directly causes a numerical error since you can not normalize the zero vector.
+                Vector3 axis = Vector3.Zero;
+                float angle = 0;
+                bone.orientation.ToAxisAngle(out axis, out angle);
+
+                Matrix4 transform = Matrix4.Identity;
+                if (axis != Vector3.Zero)
+                {
+                    transform = Matrix4.CreateFromAxisAngle(axis, angle);
+                }
                 transform *= Matrix4.CreateTranslation(bone.position);
 
                 // Invert the binding bone's transform here instead of every frame.
                 transform = Matrix4.Invert(transform);
-                
                 bone.transform = transform;
 
                 bindingBones[i] = bone;
