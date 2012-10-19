@@ -62,8 +62,6 @@ namespace LOLViewer.Graphics
             }
         }
 
-        private int version;
-
         private GLRig rig;
 
         private int numIndices;
@@ -71,9 +69,6 @@ namespace LOLViewer.Graphics
         // OpenGL objects.
         private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer,
             vertexBoneBuffer, vertexBoneWeightBuffer;
-
-        private Dictionary<String, int> boneNameToID;
-        private Dictionary<int, String> boneIDToName; 
 
         private String currentAnimation;
         private float currentFrameTime;
@@ -84,16 +79,12 @@ namespace LOLViewer.Graphics
 
         public GLRiggedModel(int maximumNumberOfBones)
         {
-            version = 0;
             TextureName = String.Empty;
 
             vao = vertexPositionBuffer = indexBuffer = vertexTextureCoordinateBuffer = vertexNormalBuffer = 
                 numIndices = vertexBoneBuffer = vertexBoneWeightBuffer = 0;
 
             rig = new GLRig(maximumNumberOfBones);
-
-            boneNameToID = new Dictionary<String, int>();
-            boneIDToName = new Dictionary<int, String>();
 
             currentAnimation = String.Empty;
             currentFrameTime = 0.0f;
@@ -122,13 +113,14 @@ namespace LOLViewer.Graphics
             List<float> vertexTextureCoordinates = new List<float>();
             List<float> vertexBoneIndices = new List<float>();
             List<float> vertexBoneWeights = new List<float>();
+            List<uint> indices = new List<uint>();
 
             // Animation data.
             List<OpenTK.Quaternion> boneOrientations = new List<OpenTK.Quaternion>();
             List<OpenTK.Vector3> bonePositions = new List<OpenTK.Vector3>();
-            List<String> boneNames = new List<String>();
             List<float> boneScales = new List<float>();
             List<int> boneParents = new List<int>();
+            List<String> boneNames = new List<String>();
 
             for (int i = 0; i < skn.numVertices; ++i)
             {
@@ -246,7 +238,7 @@ namespace LOLViewer.Graphics
             }
 
             // Depending on the version of the model, the look ups change.
-            if (version == 2 || version == 0)
+            if (skl.version == 2 || skl.version == 0)
             {
                 for (int i = 0; i < vertexBoneIndices.Count; ++i)
                 {
@@ -258,13 +250,6 @@ namespace LOLViewer.Graphics
                         vertexBoneIndices[i] = skl.boneIDs[(int)vertexBoneIndices[i]];
                     }
                 }
-            }
-
-            // Index Information
-            List<uint> indices = new List<uint>();
-            for (int i = 0; i < skn.numIndices; ++i)
-            {
-                indices.Add((uint)skn.indices[i]);
             }
 
             // Add the animations.
@@ -286,20 +271,19 @@ namespace LOLViewer.Graphics
 
                         glBone.name = bone.name;
 
-                        // Convert ANMFrame to GLFrame.
+                        // Convert ANMFrame to Matrix4.
                         foreach (ANMFrame frame in bone.frames)
                         {
-                            GLFrame glFrame = new GLFrame();
-                            glFrame.position.X = frame.position[0];
-                            glFrame.position.Y = frame.position[1];
-                            glFrame.position.Z = -frame.position[2];
+                            Matrix4 transform = Matrix4.Identity;
 
-                            glFrame.orientation.X = frame.orientation[0];
-                            glFrame.orientation.Y = frame.orientation[1];
-                            glFrame.orientation.Z = -frame.orientation[2];
-                            glFrame.orientation.W = -frame.orientation[3];
+                            Quaternion quat = new Quaternion(frame.orientation[0], frame.orientation[1], -frame.orientation[2], -frame.orientation[3]);
+                            transform = Matrix4.Rotate(quat);
 
-                            glBone.frames.Add(glFrame);
+                            transform.M41 = frame.position[0];
+                            transform.M42 = frame.position[1];
+                            transform.M43 = -frame.position[2];
+
+                            glBone.frames.Add(transform);
                         }
 
                         glAnimation.bones.Add(glBone);
@@ -312,10 +296,19 @@ namespace LOLViewer.Graphics
                 }
             }
 
-            // Create
-            result = Create((int)skl.version, vertexPositions, vertexNormals, vertexTextureCoordinates,
-                vertexBoneIndices, vertexBoneWeights, indices, boneOrientations, bonePositions,
-                boneScales, boneNames, boneParents, logger);
+            // Index Information
+            for (int i = 0; i < skn.numIndices; ++i)
+            {
+                indices.Add((uint)skn.indices[i]);
+            }
+            this.numIndices = indices.Count;
+
+            // Create the rig.
+            rig.Create(boneOrientations, bonePositions, boneScales, boneParents, boneNames, animations);
+
+            // Create the OpenGL objects.
+            result = Create(vertexPositions, vertexNormals, vertexTextureCoordinates,
+                vertexBoneIndices, vertexBoneWeights, indices, logger);
 
             return result;
         }
@@ -362,13 +355,9 @@ namespace LOLViewer.Graphics
                 // Normal Case
                 //
 
-                // Update the rig.
-                rig.UpdateBoneTransformations(currentFrame, (int)animations[currentAnimation].numberOfFrames,
-                    animations[currentAnimation].bones, boneNameToID);
-
                 // Retrieve the transforms from the rig.
                 float blend = currentFrameTime / animations[currentAnimation].timePerFrame;
-                transforms = rig.GetBoneTransformations(blend, ref transforms);
+                transforms = rig.GetBoneTransformations(currentAnimation, currentFrame, blend, ref transforms);
             }
             else
             {
@@ -442,8 +431,6 @@ namespace LOLViewer.Graphics
             currentAnimation = name;
             currentFrameTime = 0.0f;
             currentFrame = 0;
-
-            rig.Reset();
         }
 
         /// <summary>
@@ -460,8 +447,6 @@ namespace LOLViewer.Graphics
 
                 // Set elapsed time towards the next frame.
                 currentFrameTime = percentTowardsNextFrame * animations[currentAnimation].timePerFrame;
-
-                rig.Reset();
             }
         }
 
@@ -502,31 +487,13 @@ namespace LOLViewer.Graphics
 
         #region Helpers
 
-        private bool Create(int version, List<float> vertexPositions, List<float> vertexNormals,
+        private bool Create(List<float> vertexPositions, List<float> vertexNormals,
             List<float> vertexTextureCoordinates, List<float> vertexBoneIndices, List<float> vertexBoneWeights,
-            List<uint> indices, List<Quaternion> boneOrientations, List<Vector3> bonePositions,
-            List<float> boneScales, List<String> boneNames, List<int> boneParents, Logger logger)
+            List<uint> indices, Logger logger)
         {
             bool result = true;
 
-            this.version = version;
-            this.numIndices = indices.Count;
-
             logger.Event("Creating GL rigged model.");
-
-            // Create the initial binding joints.
-            rig.Create(boneOrientations, bonePositions, boneScales, boneParents);
-
-            // Store the bone transforms.
-            for (int i = 0; i < boneOrientations.Count; ++i)
-            {
-                // Sanity
-                if (boneNameToID.ContainsKey(boneNames[i]) == false)
-                {
-                    boneNameToID.Add(boneNames[i], i);
-                    boneIDToName.Add(i, boneNames[i]);
-                }
-            }
 
             // Create Vertex Array Object
             if (result == true)

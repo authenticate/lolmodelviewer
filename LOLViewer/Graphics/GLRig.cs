@@ -92,183 +92,96 @@ namespace LOLViewer.Graphics
 {
     class GLRig
     {
-        private int currentFrame;
-
-        private int numberOfBones;
-        private int maximumNumberOfBones;
-
-        private GLBone[] bindingBones;        
-        private GLBone[] currentFrames;
-        private GLBone[] nextFrames;
+        private Dictionary<String, GLAnimation> animations;
 
         public GLRig(int maximumNumberOfBones)
         {
-            currentFrame = -1;
-            numberOfBones = 0;
-            this.maximumNumberOfBones = maximumNumberOfBones;
-
-            bindingBones = new GLBone[maximumNumberOfBones];
-            currentFrames = new GLBone[maximumNumberOfBones];
-            nextFrames = new GLBone[maximumNumberOfBones];
-
-            for (int i = 0; i < maximumNumberOfBones; ++i)
-            {
-                bindingBones[i] = new GLBone();
-                currentFrames[i] = new GLBone();
-                nextFrames[i] = new GLBone();
-            }
+            animations = new Dictionary<String, GLAnimation>();
         }   
 
         public void Create(List<Quaternion> boneOrientations, List<Vector3> bonePositions,
-            List<float> boneScales, List<int> boneParents )
+            List<float> boneScales, List<int> boneParents, List<String> boneNames,
+            Dictionary<String, GLAnimation> animations)
         {
+            // Bones are not always in order between the ANM and SKL files.
+            Dictionary<String, int> boneNameToID = new Dictionary<String, int>();
+            Dictionary<int, String> boneIDToName = new Dictionary<int, String>();
+
+            // Create the binding transform.  (The SKL initial transform.)
+            GLAnimation bindingBones = new GLAnimation();
             for (int i = 0; i < boneOrientations.Count; ++i)
             {
                 GLBone bone = new GLBone();
 
+                bone.name = boneNames[i];
+
+                boneNameToID[bone.name] = i;
+                boneIDToName[i] = bone.name;
+
                 bone.parent = boneParents[i];
 
-                bone.position = bonePositions[i];
-                bone.orientation = boneOrientations[i];
+                bone.transform = Matrix4.Rotate(boneOrientations[i]);
+                bone.transform.M41 = bonePositions[i].X;
+                bone.transform.M42 = bonePositions[i].Y;
+                bone.transform.M43 = bonePositions[i].Z;
 
-                // If the quaternion creates the zero vector as an axis,
-                // just leave the transform as the identity.  Trying to calculate the transform
-                // directly causes a numerical error since you can not normalize the zero vector.
-                Vector3 axis = Vector3.Zero;
-                float angle = 0;
-                bone.orientation.ToAxisAngle(out axis, out angle);
+                bone.transform = Matrix4.Invert(bone.transform);
 
-                Matrix4 transform = Matrix4.Identity;
-                if (axis != Vector3.Zero)
-                {
-                    transform = Matrix4.CreateFromAxisAngle(axis, angle);
-                }
-                transform *= Matrix4.CreateTranslation(bone.position);
-
-                // Invert the binding bone's transform here instead of every frame.
-                transform = Matrix4.Invert(transform);
-                bone.transform = transform;
-
-                bindingBones[i] = bone;
+                bindingBones.bones.Add(bone);
             }
-        }
 
-        public void Reset()
-        {
-            currentFrame = -1;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="frameID">The current frame's ID.</param>
-        /// <param name="maxFrames">The number of frames in the current animation.</param>
-        /// <param name="bones"></param>
-        /// <param name="boneNameToID"></param>
-        public void UpdateBoneTransformations(int frameID, int maxFrames, List<GLBone> bones, 
-            Dictionary<String, int> boneNameToID)
-        {
-            // Only update if the frame changed.
-            if (frameID != currentFrame)
+            // Convert animations into absolute space.
+            foreach (var animation in animations)
             {
-                // Update the number of bones.
-                numberOfBones = bones.Count;
+                // This is sort of a mess. 
+                // We need to make sure "parent" bones are always updated before their "children".  The SKL file contains
+                // bones ordered in this manner.  However, ANM files do not always do this.  So, we sort the bones in the ANM to match the ordering in
+                // the SKL file.
+                animation.Value.bones.Sort((a, b) => boneNameToID[a.name].CompareTo(boneNameToID[b.name]));
 
-                int nextFrameID = (frameID + 1) % maxFrames;
-                if (currentFrame + 1 == nextFrameID && currentFrame != -1)
+                foreach (var bone in animation.Value.bones)
                 {
-                    //
-                    // Normal Case. Increment to the next frame.
-                    //
+                    int id = boneNameToID[bone.name];
+                    bone.parent = bindingBones.bones[id].parent;
 
-                    // We can cache the "next" transformation as the "current" transformations.
-                    GLBone[] temp = currentFrames;
-                    currentFrames = nextFrames;
-                    nextFrames = temp;
-
-                    //
-                    // For the next frame.
-                    //
-
-                    foreach (GLBone bone in bones)
+                    // Sanity.
+                    if (boneNameToID.ContainsKey(bone.name))
                     {
-                        if (boneNameToID.ContainsKey(bone.name))
+                        // For each frame...
+                        for (int i = 0; i < bone.frames.Count; ++i)
                         {
-                            int boneID = boneNameToID[bone.name];
-                            GLBone bindingBone = bindingBones[boneID];
-
-                            GLFrame frame = bone.frames[nextFrameID];
-                            GLBone poseBone = nextFrames[boneID];
-                            poseBone.parent = bindingBone.parent;
-
-                            GLBone parentBone = null;
-                            if (poseBone.parent >= 0)
+                            Matrix4 parentTransform = Matrix4.Identity;
+                            if (bone.parent >= 0)
                             {
-                                parentBone = nextFrames[poseBone.parent];
+                                GLBone parent = animation.Value.bones[bone.parent];
+                                parentTransform = parent.frames[i];
                             }
-                            poseBone = CalculateAbsoluteTransform(ref poseBone, bindingBone, parentBone, frame);
+                            bone.frames[i] = bone.frames[i] * parentTransform;
                         }
-                        //else
-
-                        // Not sure what to do if it doesn't contain the bone.
-                        // Last time I checked, this does happen more frequently that I'd like to ignore.
-                        // It's probably why certain models don't animate properly.
                     }
                 }
-                else
+            }
+
+            // Multiply the animation transforms by the binding transform.
+            foreach (var animation in animations)
+            {
+                foreach (var bone in animation.Value.bones)
                 {
-                    //
-                    // Special Case. We can not cache the transformations.
-                    //
+                    int id = boneNameToID[bone.name];
+                    GLBone bindingBone = bindingBones.bones[id];
 
-                    foreach (GLBone bone in bones)
+                    // Sanity.
+                    if (boneNameToID.ContainsKey(bone.name))
                     {
-                        if (boneNameToID.ContainsKey(bone.name))
+                        for (int i = 0; i < bone.frames.Count; ++i)
                         {
-                            int boneID = boneNameToID[bone.name];
-                            GLBone bindingBone = bindingBones[boneID];
-
-                            //
-                            // For the current frame.
-                            //
-
-                            GLFrame frame = bone.frames[frameID];
-                            GLBone poseBone = currentFrames[boneID];
-                            poseBone.parent = bindingBone.parent;
-                            
-                            GLBone parentBone = null;
-                            if (poseBone.parent >= 0)
-                            {
-                                parentBone = currentFrames[poseBone.parent];
-                            }
-                            poseBone = CalculateAbsoluteTransform(ref poseBone, bindingBone, parentBone, frame);
-
-                            //
-                            // For the next frame.
-                            //
-
-                            frame = bone.frames[nextFrameID];
-                            poseBone = nextFrames[boneID];
-                            poseBone.parent = bindingBone.parent;
-
-                            parentBone = null;
-                            if (poseBone.parent >= 0)
-                            {
-                                parentBone = nextFrames[poseBone.parent];
-                            }
-                            poseBone = CalculateAbsoluteTransform(ref poseBone, bindingBone, parentBone, frame);
+                            bone.frames[i] = bindingBone.transform * bone.frames[i];
                         }
-                        //else
-
-                        // Not sure what to do if it doesn't contain the bone.
-                        // Last time I checked, this does happen more frequently that I'd like to ignore.
-                        // It's probably why certain models don't animate properly.
                     }
                 }
+            }
 
-                // Update the frame ID.
-                currentFrame = frameID;
-            }            
+            this.animations = animations;
         }
         
         /// <summary>
@@ -278,66 +191,49 @@ namespace LOLViewer.Graphics
         /// <param name="blend">Elasped frame time / max frame time)</param>
         /// <param name="transforms">A preallocated array of transformation matrices.</param>
         /// <returns>The resultant bone transformation.  This value is identical to the reference parameter result.</returns>
-        public Matrix4[] GetBoneTransformations(float blend, ref Matrix4[] transforms)
+        public Matrix4[] GetBoneTransformations(String animation, int frame, float blend, ref Matrix4[] transforms)
         {
-            // Only update a transform for which we have a bone.
-            for (int i = 0; i < numberOfBones; ++i)
+            GLAnimation anm = animations[animation];
+
+            int nextFrame = (frame + 1) % (int)anm.numberOfFrames;
+            for (int i = 0; i < anm.bones.Count; ++i)
             {
-                //
-                // Interpolate between the current frame
-                // and the next frame.
-                //
+                // Get the current frame's transform.
+                Matrix4 current = anm.bones[i].frames[frame];
 
-                // Interpolate Orientations
-                Quaternion finalOrientation = Quaternion.Slerp(currentFrames[i].orientation,
-                    nextFrames[i].orientation, blend);
+                // Break it down into a vector and quaternion.
+                Vector3 currentPosition = Vector3.Zero;
+                currentPosition.X = current.M41;
+                currentPosition.Y = current.M42;
+                currentPosition.Z = current.M43;
 
-                // Interpolate Positions
-                Vector3 finalPosition = Vector3.Lerp(currentFrames[i].position,
-                    nextFrames[i].position, blend);
+                Quaternion currentOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(current);
 
-                // Store
+                // Get the next frame's transform.
+                Matrix4 next = anm.bones[i].frames[nextFrame];
+
+                // Break it down into a vector and quaternion.
+                Vector3 nextPosition = Vector3.Zero;
+                nextPosition.X = next.M41;
+                nextPosition.Y = next.M42;
+                nextPosition.Z = next.M43;
+
+                Quaternion nextOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(next);
+
+                // Interpolate the frame data.
+                Vector3 finalPosition = Vector3.Lerp(currentPosition, nextPosition, blend);
+                Quaternion finalOrientation = Quaternion.Slerp(currentOrientation, nextOrientation, blend);
+
+                // Rebuild a transform.
                 Matrix4 finalTransform = Matrix4.Rotate(finalOrientation);
                 finalTransform.M41 = finalPosition.X;
                 finalTransform.M42 = finalPosition.Y;
                 finalTransform.M43 = finalPosition.Z;
 
-                // Compute the result.
-                transforms[i] = bindingBones[i].transform * finalTransform;                               
+                transforms[i] = finalTransform;
             }
-            
+
             return transforms;
-        }
-
-        //
-        // Helper Functions.
-        //
-
-        /// <summary>
-        /// Calculate the transform in absolute coordinates for the pose bone.
-        /// </summary>
-        /// <param name="poseBone">The preallocated pose bone.</param>
-        /// <param name="bindingBone">The binding bone in relative coordinates.</param>
-        /// <param name="parentBone">The parent bone in relative coordinates.</param>
-        /// <param name="frame">The animation frame in relative coordinates.</param>
-        /// <returns>The result in absolute coordinates.</returns>
-        private GLBone CalculateAbsoluteTransform(ref GLBone poseBone, GLBone bindingBone, GLBone parentBone, GLFrame frame)
-        {
-            // Normal Case.
-            if (parentBone != null)
-            {
-                // Append quaternions for rotation transform B * A
-                poseBone.orientation = parentBone.orientation * frame.orientation;
-                poseBone.position = parentBone.position + Vector3.Transform(frame.position, parentBone.orientation);
-            }
-            // Root bone case.
-            else
-            {
-                poseBone.position = frame.position;
-                poseBone.orientation = frame.orientation;
-            }
-
-            return poseBone;
         }
     }
 }

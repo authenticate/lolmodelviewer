@@ -41,11 +41,8 @@ namespace LOLViewer.Graphics
         public String name;
         public int parent;
 
-        public Vector3 position;
-        public Quaternion orientation;
         public Matrix4 transform;
-
-        public List<GLFrame> frames;
+        public List<Matrix4> frames;
 
         public GLBone()
         {
@@ -53,11 +50,8 @@ namespace LOLViewer.Graphics
             // -1 reserved for root
             parent = -2;
 
-            position = Vector3.Zero;
-            orientation = Quaternion.Identity;
             transform = Matrix4.Identity;
-
-            frames = new List<GLFrame>();
+            frames = new List<Matrix4>();
         }
     }
 }
