@@ -120,7 +120,7 @@ namespace LOLViewer.Graphics
             billboard = new GLBillboard();
             staticModel = new GLStaticModel();
 
-            riggedModel = new GLRiggedModel(MAX_BONE_TRANSFORMS);
+            riggedModel = new GLRiggedModel();
             boneTransforms = new Matrix4[MAX_BONE_TRANSFORMS];
 
             textures = new Dictionary<String, GLTexture>();
@@ -1078,7 +1078,7 @@ namespace LOLViewer.Graphics
             }
 
             // Create the model.
-            riggedModel = new GLRiggedModel(MAX_BONE_TRANSFORMS);
+            riggedModel = new GLRiggedModel();
             if (result == true)
             {
                 result = riggedModel.Create(sknFile, sklFile, anmFiles, logger);

@@ -62,11 +62,8 @@ namespace LOLViewer.Graphics
             }
         }
 
-        private GLRig rig;
-
-        private int numIndices;
-        
         // OpenGL objects.
+        private int numIndices;
         private int vao, vertexPositionBuffer, indexBuffer, vertexTextureCoordinateBuffer, vertexNormalBuffer,
             vertexBoneBuffer, vertexBoneWeightBuffer;
 
@@ -77,14 +74,12 @@ namespace LOLViewer.Graphics
 
         #region Initialization
 
-        public GLRiggedModel(int maximumNumberOfBones)
+        public GLRiggedModel()
         {
             TextureName = String.Empty;
 
             vao = vertexPositionBuffer = indexBuffer = vertexTextureCoordinateBuffer = vertexNormalBuffer = 
                 numIndices = vertexBoneBuffer = vertexBoneWeightBuffer = 0;
-
-            rig = new GLRig(maximumNumberOfBones);
 
             currentAnimation = String.Empty;
             currentFrameTime = 0.0f;
@@ -303,8 +298,87 @@ namespace LOLViewer.Graphics
             }
             this.numIndices = indices.Count;
 
-            // Create the rig.
-            rig.Create(boneOrientations, bonePositions, boneScales, boneParents, boneNames, animations);
+            //
+            // Compute the final animation transforms.
+            //
+
+            // Bones are not always in order between the ANM and SKL files.
+            Dictionary<String, int> boneNameToID = new Dictionary<String, int>();
+            Dictionary<int, String> boneIDToName = new Dictionary<int, String>();
+
+            // Create the binding transform.  (The SKL initial transform.)
+            GLAnimation bindingBones = new GLAnimation();
+            for (int i = 0; i < boneOrientations.Count; ++i)
+            {
+                GLBone bone = new GLBone();
+
+                bone.name = boneNames[i];
+
+                boneNameToID[bone.name] = i;
+                boneIDToName[i] = bone.name;
+
+                bone.parent = boneParents[i];
+
+                bone.transform = Matrix4.Rotate(boneOrientations[i]);
+                bone.transform.M41 = bonePositions[i].X;
+                bone.transform.M42 = bonePositions[i].Y;
+                bone.transform.M43 = bonePositions[i].Z;
+
+                bone.transform = Matrix4.Invert(bone.transform);
+
+                bindingBones.bones.Add(bone);
+            }
+
+            // Convert animations into absolute space.
+            foreach (var animation in animations)
+            {
+                // This is sort of a mess. 
+                // We need to make sure "parent" bones are always updated before their "children".  The SKL file contains
+                // bones ordered in this manner.  However, ANM files do not always do this.  So, we sort the bones in the ANM to match the ordering in
+                // the SKL file.
+                animation.Value.bones.Sort((a, b) => boneNameToID[a.name].CompareTo(boneNameToID[b.name]));
+
+                foreach (var bone in animation.Value.bones)
+                {
+                    int id = boneNameToID[bone.name];
+                    bone.parent = bindingBones.bones[id].parent;
+
+                    // Sanity.
+                    if (boneNameToID.ContainsKey(bone.name))
+                    {
+                        // For each frame...
+                        for (int i = 0; i < bone.frames.Count; ++i)
+                        {
+                            Matrix4 parentTransform = Matrix4.Identity;
+                            if (bone.parent >= 0)
+                            {
+                                GLBone parent = animation.Value.bones[bone.parent];
+                                parentTransform = parent.frames[i];
+                            }
+                            bone.frames[i] = bone.frames[i] * parentTransform;
+                        }
+                    }
+                }
+            }
+
+            // Multiply the animation transforms by the binding transform.
+            foreach (var animation in animations)
+            {
+                foreach (var bone in animation.Value.bones)
+                {
+                    int id = boneNameToID[bone.name];
+                    GLBone bindingBone = bindingBones.bones[id];
+
+                    // Sanity.
+                    if (boneNameToID.ContainsKey(bone.name))
+                    {
+                        for (int i = 0; i < bone.frames.Count; ++i)
+                        {
+                            bone.frames[i] = bindingBone.transform * bone.frames[i];
+                        }
+                    }
+                }
+            }
 
             // Create the OpenGL objects.
             result = Create(vertexPositions, vertexNormals, vertexTextureCoordinates,
@@ -354,10 +428,50 @@ namespace LOLViewer.Graphics
                 //
                 // Normal Case
                 //
+                // Interpolate between the current and next frames to calculate
+                // the transform to send to the renderer.
+                //
 
-                // Retrieve the transforms from the rig.
-                float blend = currentFrameTime / animations[currentAnimation].timePerFrame;
-                transforms = rig.GetBoneTransformations(currentAnimation, currentFrame, blend, ref transforms);
+                GLAnimation animation = animations[currentAnimation];
+                float blend = currentFrameTime / animation.timePerFrame;
+
+                int nextFrame = (currentFrame + 1) % (int)animation.numberOfFrames;
+                for (int i = 0; i < animation.bones.Count; ++i)
+                {
+                    // Get the current frame's transform.
+                    Matrix4 current = animation.bones[i].frames[currentFrame];
+
+                    // Break it down into a vector and quaternion.
+                    Vector3 currentPosition = Vector3.Zero;
+                    currentPosition.X = current.M41;
+                    currentPosition.Y = current.M42;
+                    currentPosition.Z = current.M43;
+
+                    Quaternion currentOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(current);
+
+                    // Get the next frame's transform.
+                    Matrix4 next = animation.bones[i].frames[nextFrame];
+
+                    // Break it down into a vector and quaternion.
+                    Vector3 nextPosition = Vector3.Zero;
+                    nextPosition.X = next.M41;
+                    nextPosition.Y = next.M42;
+                    nextPosition.Z = next.M43;
+
+                    Quaternion nextOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(next);
+
+                    // Interpolate the frame data.
+                    Vector3 finalPosition = Vector3.Lerp(currentPosition, nextPosition, blend);
+                    Quaternion finalOrientation = Quaternion.Slerp(currentOrientation, nextOrientation, blend);
+
+                    // Rebuild a transform.
+                    Matrix4 finalTransform = Matrix4.Rotate(finalOrientation);
+                    finalTransform.M41 = finalPosition.X;
+                    finalTransform.M42 = finalPosition.Y;
+                    finalTransform.M43 = finalPosition.Z;
+
+                    transforms[i] = finalTransform;
+                }
             }
             else
             {
