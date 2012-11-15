@@ -326,6 +326,10 @@ namespace LOLFileReader
                     {
                         data.bones.Add(bone.Value);
                     }
+
+                    // Currently returning false for this version.  We can not render this version correctly yet.
+                    // So, we need to tell the viewer not to try and load it.
+                    result = false;
                 }
                 // Unknown version
                 else
