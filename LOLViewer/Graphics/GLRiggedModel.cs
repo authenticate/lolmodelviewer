@@ -117,6 +117,10 @@ namespace LOLViewer.Graphics
             List<int> boneParents = new List<int>();
             List<String> boneNames = new List<String>();
 
+            // Bones are not always in order between the ANM and SKL files.
+            Dictionary<String, int> boneNameToID = new Dictionary<String, int>();
+            Dictionary<int, String> boneIDToName = new Dictionary<int, String>();
+
             for (int i = 0; i < skn.numVertices; ++i)
             {
                 // Position Information
@@ -193,6 +197,9 @@ namespace LOLViewer.Graphics
                 bonePositions.Add(position);
 
                 boneNames.Add(skl.bones[i].name);
+                boneNameToID[skl.bones[i].name] = i;
+                boneIDToName[i] = skl.bones[i].name;
+
                 boneScales.Add(skl.bones[i].scale);
                 boneParents.Add(skl.bones[i].parentID);
             }
@@ -220,12 +227,12 @@ namespace LOLViewer.Graphics
                         // Update orientation.
                         // Append quaternions for rotation transform B * A.
                         boneOrientations[i] = boneOrientations[parentBoneID] * boneOrientations[i];
-
+                        
                         Vector3 localPosition = Vector3.Zero;
                         localPosition.X = skl.bones[i].position[0];
                         localPosition.Y = skl.bones[i].position[1];
                         localPosition.Z = skl.bones[i].position[2];
-
+                        
                         // Update position.
                         bonePositions[i] = bonePositions[parentBoneID] + Vector3.Transform(localPosition, boneOrientations[parentBoneID]);
                     }
@@ -264,7 +271,22 @@ namespace LOLViewer.Graphics
                     {
                         GLBone glBone = new GLBone();
 
-                        glBone.name = bone.name;
+                        if (animation.Value.version == 4 && skl.boneIDMap.Count > 0)
+                        {
+                            // Version 4 ANM files contain a hash value to represent the bone ID/name.
+                            // We need to use the map from the SKL file to match the ANM bone with the correct
+                            // SKL bone.
+
+                            if (skl.boneIDMap.ContainsKey(bone.id))
+                            {
+                                int sklID = (int)skl.boneIDMap[bone.id];
+                                glBone.name = boneIDToName[sklID];
+                            }
+                        }
+                        else
+                        {
+                            glBone.name = bone.name;
+                        }
 
                         // Convert ANMFrame to Matrix4.
                         foreach (ANMFrame frame in bone.frames)
@@ -302,9 +324,28 @@ namespace LOLViewer.Graphics
             // Compute the final animation transforms.
             //
 
-            // Bones are not always in order between the ANM and SKL files.
-            Dictionary<String, int> boneNameToID = new Dictionary<String, int>();
-            Dictionary<int, String> boneIDToName = new Dictionary<int, String>();
+            foreach (var animation in animations)
+            {
+                // This is sort of a mess. 
+                // We need to make sure "parent" bones are always updated before their "children".  The SKL file contains
+                // bones ordered in this manner.  However, ANM files do not always do this.  So, we sort the bones in the ANM to match the ordering in
+                // the SKL file.
+                animation.Value.bones.Sort( (a, b) =>
+                {
+                    if (boneNameToID.ContainsKey(a.name) && boneNameToID.ContainsKey(b.name))
+                    {
+                        return boneNameToID[a.name].CompareTo(boneNameToID[b.name]);
+                    }
+                    else if (boneNameToID.ContainsKey(a.name) == false)
+                    {
+                        return 1;
+                    }
+                    else
+                    {
+                        return -1;
+                    }
+                });
+            }
 
             // Create the binding transform.  (The SKL initial transform.)
             GLAnimation bindingBones = new GLAnimation();
@@ -313,10 +354,6 @@ namespace LOLViewer.Graphics
                 GLBone bone = new GLBone();
 
                 bone.name = boneNames[i];
-
-                boneNameToID[bone.name] = i;
-                boneIDToName[i] = bone.name;
-
                 bone.parent = boneParents[i];
 
                 bone.transform = Matrix4.Rotate(boneOrientations[i]);
@@ -328,32 +365,29 @@ namespace LOLViewer.Graphics
 
                 bindingBones.bones.Add(bone);
             }
-
+            
             // Convert animations into absolute space.
             foreach (var animation in animations)
             {
-                // This is sort of a mess. 
-                // We need to make sure "parent" bones are always updated before their "children".  The SKL file contains
-                // bones ordered in this manner.  However, ANM files do not always do this.  So, we sort the bones in the ANM to match the ordering in
-                // the SKL file.
-                animation.Value.bones.Sort((a, b) => boneNameToID[a.name].CompareTo(boneNameToID[b.name]));
-
                 foreach (var bone in animation.Value.bones)
                 {
-                    int id = boneNameToID[bone.name];
-                    bone.parent = bindingBones.bones[id].parent;
-
                     // Sanity.
                     if (boneNameToID.ContainsKey(bone.name))
                     {
+                        int id = boneNameToID[bone.name];
+                        bone.parent = bindingBones.bones[id].parent;
+
                         // For each frame...
                         for (int i = 0; i < bone.frames.Count; ++i)
                         {
                             Matrix4 parentTransform = Matrix4.Identity;
                             if (bone.parent >= 0)
                             {
-                                GLBone parent = animation.Value.bones[bone.parent];
-                                parentTransform = parent.frames[i];
+                                if (bone.parent < animation.Value.bones.Count)
+                                {
+                                    GLBone parent = animation.Value.bones[bone.parent];
+                                    parentTransform = parent.frames[i];
+                                }
                             }
                             bone.frames[i] = bone.frames[i] * parentTransform;
                         }
@@ -366,12 +400,12 @@ namespace LOLViewer.Graphics
             {
                 foreach (var bone in animation.Value.bones)
                 {
-                    int id = boneNameToID[bone.name];
-                    GLBone bindingBone = bindingBones.bones[id];
-
                     // Sanity.
                     if (boneNameToID.ContainsKey(bone.name))
                     {
+                        int id = boneNameToID[bone.name];
+                        GLBone bindingBone = bindingBones.bones[id];
+
                         for (int i = 0; i < bone.frames.Count; ++i)
                         {
                             bone.frames[i] = bindingBone.transform * bone.frames[i];
