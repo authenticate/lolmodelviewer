@@ -433,9 +433,22 @@ namespace LOLViewer.GUI
                         "Unable to read the League of Legends' installation directory. " +
                         "If you installed League of Legends " +
                         "in a non-default location, use 'File -> Read...' to manually " +
-                        "select the League of Legends' installation directory.",
+                        "select the League of Legends' installation directory." +
+                        "\n\n" +
+                        "Loading some sample models.",
                         "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }));
+
+                // Load some sample models.
+                logger.Event("Reading sample models.");
+                reader.Root = "./SampleModels/filearchives/";
+                
+                result = reader.Read(logger);
+                if (result == true)
+                {
+                    logger.Event("Sorting sample models.");
+                    reader.SortModelNames();
+                }
 
                 return;
             }
