@@ -52,7 +52,8 @@ namespace LOLViewer.GUI
 {
     public partial class MainWindow : Form
     {
-        private const String DEFAULT_DIRECTORY_FILE = "lolviewer.dat";
+        private const String DEFAULT_SAMPLE_MODELS_DIRECTORY = "./SampleModels/filearchives/";
+        private const String DEFAULT_DATA_FILE = "lolviewer.dat";
         private const String DEFAULT_LOG_FILE = "lolviewer.log";
 
         // Windowing variables
@@ -100,7 +101,7 @@ namespace LOLViewer.GUI
                 FileStream file = null;
                 try
                 {
-                    FileInfo fileInfo = new FileInfo(DEFAULT_DIRECTORY_FILE);
+                    FileInfo fileInfo = new FileInfo(DEFAULT_DATA_FILE);
                     if (fileInfo.Exists == true)
                     {
                         file = new FileStream(fileInfo.FullName, FileMode.Open);
@@ -108,12 +109,12 @@ namespace LOLViewer.GUI
                     }
                     else
                     {
-                        logger.Warning("Failed to locate " + DEFAULT_DIRECTORY_FILE + ".");
+                        logger.Warning("Failed to locate " + DEFAULT_DATA_FILE + ".");
                     }
                 }
                 catch
                 {
-                    logger.Warning("Failed to open " + DEFAULT_DIRECTORY_FILE + ".");
+                    logger.Warning("Failed to open " + DEFAULT_DATA_FILE + ".");
                 }
 
                 if (isFileOpen == true)
@@ -123,7 +124,7 @@ namespace LOLViewer.GUI
                     {
                         try
                         {
-                            logger.Event("Reading " + DEFAULT_DIRECTORY_FILE + ".");
+                            logger.Event("Reading " + DEFAULT_DATA_FILE + ".");
 
                             fileReader = new BinaryReader(file);
                             reader.Root = fileReader.ReadString();
@@ -131,7 +132,7 @@ namespace LOLViewer.GUI
                         }
                         catch
                         {
-                            logger.Warning("Failed to read " + DEFAULT_DIRECTORY_FILE + ".");
+                            logger.Warning("Failed to read " + DEFAULT_DATA_FILE + ".");
                             file.Close();
                         }
                     }
@@ -441,7 +442,7 @@ namespace LOLViewer.GUI
 
                 // Load some sample models.
                 logger.Event("Reading sample models.");
-                reader.Root = "./SampleModels/filearchives/";
+                reader.Root = DEFAULT_SAMPLE_MODELS_DIRECTORY;
                 
                 result = reader.Read(logger);
                 if (result == true)
@@ -458,12 +459,12 @@ namespace LOLViewer.GUI
             FileStream file = null;
             try
             {
-                logger.Event("Opening " + DEFAULT_DIRECTORY_FILE + ".");
-                file = new FileStream(DEFAULT_DIRECTORY_FILE, FileMode.OpenOrCreate);
+                logger.Event("Opening " + DEFAULT_DATA_FILE + ".");
+                file = new FileStream(DEFAULT_DATA_FILE, FileMode.OpenOrCreate);
             }
             catch
             {
-                logger.Warning("Failed to open " + DEFAULT_DIRECTORY_FILE + ".");
+                logger.Warning("Failed to open " + DEFAULT_DATA_FILE + ".");
             }
 
             BinaryWriter writer = null;
