@@ -330,9 +330,9 @@ namespace LOLViewer.GUI
             // 
             // modelListBox
             // 
-            this.modelListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.modelListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.modelListBox.FormattingEnabled = true;
             this.modelListBox.Location = new System.Drawing.Point(0, 52);
             this.modelListBox.Name = "modelListBox";
@@ -341,8 +341,8 @@ namespace LOLViewer.GUI
             // 
             // modelSearchBox
             // 
-            this.modelSearchBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.modelSearchBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.modelSearchBox.Location = new System.Drawing.Point(0, 24);
             this.modelSearchBox.Name = "modelSearchBox";
             this.modelSearchBox.Size = new System.Drawing.Size(160, 20);
@@ -372,7 +372,7 @@ namespace LOLViewer.GUI
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "MainWindow";
             this.Padding = new System.Windows.Forms.Padding(10);
-            this.Text = "LOLViewer 1.18";
+            this.Text = "LOLViewer 11.16.2012";
             this.mainWindowMenuStrip.ResumeLayout(false);
             this.mainWindowMenuStrip.PerformLayout();
             this.mainWindowStatusStrip.ResumeLayout(false);
