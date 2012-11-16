@@ -469,7 +469,7 @@ namespace LOLViewer.Graphics
                 GLAnimation animation = animations[currentAnimation];
                 float blend = currentFrameTime / animation.timePerFrame;
 
-                //int nextFrame = (currentFrame + 1) % (int)animation.numberOfFrames;
+                int nextFrame = (currentFrame + 1) % (int)animation.numberOfFrames;
                 for (int i = 0; i < animation.bones.Count; ++i)
                 {
                     // Get the current frame's transform.
@@ -478,41 +478,39 @@ namespace LOLViewer.Graphics
                     //
                     // The interpolation code is unstable.  It creates alot of animation anomalies.
                     //
-                    // TODO: Fix it and comment it back in.
+                    // TODO: Fix it.
                     //
 
-                    //// Break it down into a vector and quaternion.
-                    //Vector3 currentPosition = Vector3.Zero;
-                    //currentPosition.X = current.M41;
-                    //currentPosition.Y = current.M42;
-                    //currentPosition.Z = current.M43;
-                    //
-                    //Quaternion currentOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(current);
-                    //
-                    //// Get the next frame's transform.
-                    //Matrix4 next = animation.bones[i].frames[nextFrame];
-                    //
-                    //// Break it down into a vector and quaternion.
-                    //Vector3 nextPosition = Vector3.Zero;
-                    //nextPosition.X = next.M41;
-                    //nextPosition.Y = next.M42;
-                    //nextPosition.Z = next.M43;
-                    //
-                    //Quaternion nextOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(next);
-                    //
-                    //// Interpolate the frame data.
-                    //Vector3 finalPosition = Vector3.Lerp(currentPosition, nextPosition, blend);
-                    //Quaternion finalOrientation = Quaternion.Slerp(currentOrientation, nextOrientation, blend);
-                    //
-                    //// Rebuild a transform.
-                    //Matrix4 finalTransform = Matrix4.Rotate(finalOrientation);
-                    //finalTransform.M41 = finalPosition.X;
-                    //finalTransform.M42 = finalPosition.Y;
-                    //finalTransform.M43 = finalPosition.Z;
-                    //
-                    //transforms[i] = finalTransform;
+                    // Break it down into a vector and quaternion.
+                    Vector3 currentPosition = Vector3.Zero;
+                    currentPosition.X = current.M41;
+                    currentPosition.Y = current.M42;
+                    currentPosition.Z = current.M43;
                     
-                    transforms[i] = current;
+                    Quaternion currentOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(current);
+                    
+                    // Get the next frame's transform.
+                    Matrix4 next = animation.bones[i].frames[nextFrame];
+                    
+                    // Break it down into a vector and quaternion.
+                    Vector3 nextPosition = Vector3.Zero;
+                    nextPosition.X = next.M41;
+                    nextPosition.Y = next.M42;
+                    nextPosition.Z = next.M43;
+                    
+                    Quaternion nextOrientation = OpenTKExtras.Matrix4.CreateQuatFromMatrix(next);
+                    
+                    // Interpolate the frame data.
+                    Vector3 finalPosition = Vector3.Lerp(currentPosition, nextPosition, blend);
+                    Quaternion finalOrientation = Quaternion.Slerp(currentOrientation, nextOrientation, blend);
+                    
+                    // Rebuild a transform.
+                    Matrix4 finalTransform = Matrix4.Rotate(finalOrientation);
+                    finalTransform.M41 = finalPosition.X;
+                    finalTransform.M42 = finalPosition.Y;
+                    finalTransform.M43 = finalPosition.Z;
+                    
+                    transforms[i] = finalTransform;
                 }
             }
             else
