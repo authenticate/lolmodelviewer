@@ -223,8 +223,15 @@ namespace LOLViewer.GUI
 
         private void OnMainWindowShown(object sender, EventArgs e)
         {
-            // Read model files.
-            OnReadModels(sender, e);
+            if (isGLLoaded == true)
+            {
+                // Read model files.
+                OnReadModels(sender, e);
+            }
+            else
+            {
+                this.Close();
+            }
         }
 
         //
@@ -261,21 +268,22 @@ namespace LOLViewer.GUI
         {
             // Set up renderer.
             bool result = renderer.Initialize(logger);
-            if (result == false)
+            if (result == true)
             {
-                MessageBox.Show("OpenGL failed to load." +
-                    "  Please install the latest display drivers from your GPU manufacturer.", "Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isGLLoaded = true;
 
-                this.Close();
-                return;
+                // Call an initial resize to get some camera and renderer parameters set up.
+                GLControlMainOnResize(sender, e);
+                timer.Start();
             }
+            else
+            {
+                isGLLoaded = false;
 
-            isGLLoaded = true;
-
-            // Call an initial resize to get some camera and renderer parameters set up.
-            GLControlMainOnResize(sender, e);
-            timer.Start();
+                MessageBox.Show(this, "OpenGL failed to load." +
+                    "  Please install the latest display drivers from your GPU manufacturer.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            }            
         }
 
         public void GLControlMainOnUpdateFrame(object sender, EventArgs e)
@@ -293,7 +301,10 @@ namespace LOLViewer.GUI
 
         private void GLControlMainOnDispose(object sender, EventArgs e)
         {
-            renderer.Shutdown();
+            if (isGLLoaded == true)
+            {
+                renderer.Shutdown();
+            }
 
             // Close logger at this point.
             logger.Event("Program shutdown.");
@@ -437,7 +448,7 @@ namespace LOLViewer.GUI
                         "select the League of Legends' installation directory." +
                         "\n\n" +
                         "Loading some sample models.",
-                        "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
                 }));
 
                 // Load some sample models.
