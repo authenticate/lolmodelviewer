@@ -69,11 +69,11 @@ namespace LOLViewer.GUI
             this.titleLabel.Name = "titleLabel";
             this.titleLabel.Size = new System.Drawing.Size(154, 13);
             this.titleLabel.TabIndex = 0;
-            this.titleLabel.Text = "LOLViewer Version 11.16.2012";
+            this.titleLabel.Text = "LOLViewer Version 12.06.2015";
             // 
             // descriptionTextBox
             // 
-            this.descriptionTextBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.descriptionTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.descriptionTextBox.Location = new System.Drawing.Point(11, 24);
             this.descriptionTextBox.Multiline = true;
             this.descriptionTextBox.Name = "descriptionTextBox";
@@ -81,9 +81,9 @@ namespace LOLViewer.GUI
             this.descriptionTextBox.Size = new System.Drawing.Size(156, 166);
             this.descriptionTextBox.TabIndex = 1;
             this.descriptionTextBox.TabStop = false;
-            this.descriptionTextBox.Text = "Original Author: \r\n - Authentication\r\n\r\nContributors:\r\n - RichieSams\r\n - lordgreg" +
-    "greg\r\n\r\nSpecial Thanks:\r\n - ThiSpawn\r\n - ItzWarty\r\n - yourbuddypal\r\n - RobTheBlo" +
-    "ke (Gamedev.net)";
+            this.descriptionTextBox.Text = "Original Author: \r\n - Authenticate\r\n\r\nContributors:\r\n - RichieSams\r\n - lordgreggr" +
+    "eg\r\n\r\nSpecial Thanks:\r\n - ThiSpawn\r\n - ItzWarty\r\n - yourbuddypal\r\n - RobTheBloke" +
+    " (Gamedev.net)";
             // 
             // okButton
             // 
