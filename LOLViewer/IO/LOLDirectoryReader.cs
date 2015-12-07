@@ -240,14 +240,16 @@ namespace LOLViewer.IO
             {
                 RAFMasterFileList rafFiles = new RAFMasterFileList(dir.FullName);
                 logger.Event("Opening the 'filearchives' directory: " + dir.FullName);
-                foreach (RAFMasterFileList.RAFSearchResult result in rafFiles.SearchFileEntries(new string[] { ".dds", ".skn", ".skl", ".inibin", "animations.list", ".anm" }, RAFMasterFileList.RAFSearchType.All))
+
+                List<RAFSearchResult> fileEntries = rafFiles.SearchFileEntries(new string[] { ".dds", ".skn", ".skl", ".inibin", "animations.list", ".anm" }, RAFSearchType.All);
+                foreach (var file in fileEntries)
                 {
-                    RAFFileListEntry e = result.value;
+                    RAFFileListEntry e = file.value;
 
                     // Split off the actual file name from the full path
                     String name = e.FileName.Substring(e.FileName.LastIndexOf('/') + 1).ToLower();
 
-                    switch (result.searchPhrase)
+                    switch (file.searchPhrase)
                     {
                         case ".dds":
                             // Try to parse out unwanted textures.

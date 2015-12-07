@@ -33,6 +33,9 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="RAFlibPlus">
+      <HintPath>..\RAFlibPlus\RAFlibPlus.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -43,6 +46,12 @@
     <Reference Include="System.Xml" />
     <Reference Include="Tao.DevIL">
       <HintPath>Tao.DevIL\Tao.DevIL.dll</HintPath>
+    </Reference>
+    <Reference Include="wLib">
+      <HintPath>..\RAFlibPlus\wLib.dll</HintPath>
+    </Reference>
+    <Reference Include="zlib.net">
+      <HintPath>..\RAFlibPlus\zlib.net.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -76,10 +85,6 @@
     <ProjectReference Include="..\Logger\Logger.csproj">
       <Project>{C208E631-1AE1-4BA6-AE95-19C8E5871176}</Project>
       <Name>Logger</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\RAFlib-Plus\RAFlibPlus.csproj">
-      <Project>{BDF8E31B-A461-41A7-8361-07F10B40AD4F}</Project>
-      <Name>RAFlibPlus</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
