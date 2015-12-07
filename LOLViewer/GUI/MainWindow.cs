@@ -173,7 +173,7 @@ namespace LOLViewer.GUI
             readMainMenuStripItem.Click += new EventHandler(OnSetDirectory);
 
             // Model View Callbacks
-            modelListBox.DoubleClick += new EventHandler(OnModelListDoubleClick);
+            modelListBox.Click += new EventHandler(OnModelListClick);
             modelListBox.KeyPress += new KeyPressEventHandler(OnModelListKeyPress);
 
             // Buttons
@@ -523,34 +523,36 @@ namespace LOLViewer.GUI
         // Model List Box Handlers
         //
 
-        private void OnModelListDoubleClick(object sender, EventArgs e)
+        private void OnModelListClick(object sender, EventArgs e)
         {
             String modelName = (String)modelListBox.SelectedItem;
-
-            // TODO: Not really sure how to handle errors
-            // if either of these functions fail.
-            LOLModel model = reader.GetModel(modelName);
-            if (model != null)
+            if (modelName != null)
             {
-                bool result = renderer.LoadModel(model, logger);
-
-                currentAnimationComboBox.Items.Clear();
-                foreach (String name in renderer.GetAnimations())
+                // TODO: Not really sure how to handle errors
+                // if either of these functions fail.
+                LOLModel model = reader.GetModel(modelName);
+                if (model != null)
                 {
-                    currentAnimationComboBox.Items.Add(name);
+                    bool result = renderer.LoadModel(model, logger);
+
+                    currentAnimationComboBox.Items.Clear();
+                    foreach (String name in renderer.GetAnimations())
+                    {
+                        currentAnimationComboBox.Items.Add(name);
+                    }
+
+                    currentAnimationComboBox.Text = "";
+
+                    if (currentAnimationComboBox.Items.Count > 0)
+                    {
+                        currentAnimationComboBox.SelectedIndex = 0;
+                    }
+
+                    animationController.DisableAnimation();
+
+                    // Update status bar text.
+                    mainWindowStatusLabel.Text = "Viewing " + modelName + ". Left mouse rotates, right mouse pans, and mouse wheel zooms.";
                 }
-
-                currentAnimationComboBox.Text = "";
-
-                if (currentAnimationComboBox.Items.Count > 0)
-                {
-                    currentAnimationComboBox.SelectedIndex = 0;
-                }
-
-                animationController.DisableAnimation();
-
-                // Update status bar text.
-                mainWindowStatusLabel.Text = "Viewing " + modelName + ". Left mouse rotates, right mouse pans, and mouse wheel zooms.";
             }
 
             OnResetCameraButtonClick(sender, e);
@@ -563,7 +565,7 @@ namespace LOLViewer.GUI
             if (e.KeyChar == '\r')
             {
                 // Update model.
-                OnModelListDoubleClick(sender, e);
+                OnModelListClick(sender, e);
                 e.Handled = true; // fixes unwanted 'ding' sound
             }
         }
