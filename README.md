@@ -20,4 +20,6 @@ GPLv3
 
 ### Screen Shots
 
-Need to update image.
+![](./fiddle.png)
+
+![](./kogmaw.png)
