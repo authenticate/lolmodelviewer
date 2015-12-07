@@ -74,11 +74,11 @@ namespace LOLViewer.GUI
             // descriptionTextBox
             // 
             this.descriptionTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.descriptionTextBox.Location = new System.Drawing.Point(11, 24);
+            this.descriptionTextBox.Location = new System.Drawing.Point(10, 30);
             this.descriptionTextBox.Multiline = true;
             this.descriptionTextBox.Name = "descriptionTextBox";
             this.descriptionTextBox.ReadOnly = true;
-            this.descriptionTextBox.Size = new System.Drawing.Size(156, 166);
+            this.descriptionTextBox.Size = new System.Drawing.Size(156, 163);
             this.descriptionTextBox.TabIndex = 1;
             this.descriptionTextBox.TabStop = false;
             this.descriptionTextBox.Text = "Original Author: \r\n - Authenticate\r\n\r\nContributors:\r\n - RichieSams\r\n - lordgreggr" +
@@ -99,6 +99,7 @@ namespace LOLViewer.GUI
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(178, 232);
+            this.ControlBox = false;
             this.Controls.Add(this.okButton);
             this.Controls.Add(this.descriptionTextBox);
             this.Controls.Add(this.titleLabel);
