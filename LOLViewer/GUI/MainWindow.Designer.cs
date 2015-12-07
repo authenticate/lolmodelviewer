@@ -121,7 +121,7 @@ namespace LOLViewer.GUI
             this.readMainMenuStripItem.Name = "readMainMenuStripItem";
             this.readMainMenuStripItem.Size = new System.Drawing.Size(282, 22);
             this.readMainMenuStripItem.Text = "Read...";
-            this.readMainMenuStripItem.ToolTipText = "No longer about to read the current version of League of Legends.";
+            this.readMainMenuStripItem.ToolTipText = "No longer able to read the current version of League of Legends.";
             // 
             // readDirectoryMainMenuStripItem
             // 
@@ -129,7 +129,7 @@ namespace LOLViewer.GUI
             this.readDirectoryMainMenuStripItem.Name = "readDirectoryMainMenuStripItem";
             this.readDirectoryMainMenuStripItem.Size = new System.Drawing.Size(282, 22);
             this.readDirectoryMainMenuStripItem.Text = "Read from Default Installation Directory";
-            this.readDirectoryMainMenuStripItem.ToolTipText = "No longer about to read the current version of League of Legends.";
+            this.readDirectoryMainMenuStripItem.ToolTipText = "No longer able to read the current version of League of Legends.";
             // 
             // fileToolStripSeparator
             // 
