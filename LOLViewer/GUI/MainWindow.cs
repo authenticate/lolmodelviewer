@@ -426,74 +426,96 @@ namespace LOLViewer.GUI
         {
             logger.HoldFlushes();
 
-            // Read League of Legends' information.
+            // Load some sample models.
+            logger.Event("Reading sample models.");
+            reader.Root = DEFAULT_SAMPLE_MODELS_DIRECTORY;
+
             bool result = reader.Read(logger);
-            if (result == true)
+            if (result)
             {
-                logger.Event("Sorting models.");
+                logger.Event("Sorting sample models.");
                 reader.SortModelNames();
             }
             else
             {
-                // Bail if reading fails.
-                logger.Error("Failed to read models.");
-
-                // UI calls need to be executed on the main thread.
-                this.BeginInvoke((Action)(() =>
-                {
-                    MessageBox.Show(this,
-                        "Unable to read the League of Legends' installation directory. " +
-                        "If you installed League of Legends " +
-                        "in a non-default location, use 'File -> Read...' to manually " +
-                        "select the League of Legends' installation directory." +
-                        "\n\n" +
-                        "Loading some sample models.",
-                        "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
-                }));
-
-                // Load some sample models.
-                logger.Event("Reading sample models.");
-                reader.Root = DEFAULT_SAMPLE_MODELS_DIRECTORY;
-                
-                result = reader.Read(logger);
-                if (result == true)
-                {
-                    logger.Event("Sorting sample models.");
-                    reader.SortModelNames();
-                }
-
-                return;
+                logger.Error("Unable to read sample models.");
             }
 
-            // On successful read, write the root directory to file.
-            logger.Event("Storing League of Legends installation directory path.");
-            FileStream file = null;
-            try
-            {
-                logger.Event("Opening " + DEFAULT_DATA_FILE + ".");
-                file = new FileStream(DEFAULT_DATA_FILE, FileMode.OpenOrCreate);
-            }
-            catch
-            {
-                logger.Warning("Failed to open " + DEFAULT_DATA_FILE + ".");
-            }
+            //
+            // TODO: This code is disabled until reverse engineering efforts
+            //       interpret Riot's current directory structure.
+            //
 
-            BinaryWriter writer = null;
-            if (file != null)
-            {
-                try
-                {
-                    logger.Event("Writing League of Legends directory path.");
-                    writer = new BinaryWriter(file);
-                    writer.Write(reader.Root);
-                    writer.Close();
-                }
-                catch
-                {
-                    logger.Warning("Failed to write League of Legends directory path.");
-                    file.Close();
-                }
-            }
+            //// Read League of Legends' information.
+            //bool result = reader.Read(logger);
+            //if (result != true)
+            //{
+            //    // Bail if reading fails.
+            //    logger.Error("Failed to read models.");
+            //
+            //    // UI calls need to be executed on the main thread.
+            //    this.BeginInvoke((Action)(() =>
+            //    {
+            //        MessageBox.Show(this,
+            //            "Unable to read the League of Legends' installation directory. " +
+            //            "If you installed League of Legends " +
+            //            "in a non-default location, use 'File -> Read...' to manually " +
+            //            "select the League of Legends' installation directory." +
+            //            "\n\n" +
+            //            "Loading some sample models.",
+            //            "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1);
+            //    }));
+            //
+            //    // Load some sample models.
+            //    logger.Event("Reading sample models.");
+            //    reader.Root = DEFAULT_SAMPLE_MODELS_DIRECTORY;
+            //
+            //    result = reader.Read(logger);
+            //    if (result)
+            //    {
+            //        logger.Event("Sorting sample models.");
+            //        reader.SortModelNames();
+            //    }
+            //    else
+            //    {
+            //        logger.Error("Unable to read sample models.");
+            //    }
+            //}
+            //else
+            //{
+            //    logger.Event("Sorting models.");
+            //    reader.SortModelNames();
+            //
+            //    // On a successful read, write the root directory to file.
+            //    logger.Event("Storing League of Legends installation directory path.");
+            //    FileStream file = null;
+            //    try
+            //    {
+            //        logger.Event("Opening " + DEFAULT_DATA_FILE + ".");
+            //        file = new FileStream(DEFAULT_DATA_FILE, FileMode.OpenOrCreate);
+            //    }
+            //    catch
+            //    {
+            //        logger.Warning("Failed to open " + DEFAULT_DATA_FILE + ".");
+            //    }
+            //
+            //    BinaryWriter writer = null;
+            //    if (file != null)
+            //    {
+            //        try
+            //        {
+            //            logger.Event("Writing League of Legends directory path.");
+            //            writer = new BinaryWriter(file);
+            //            writer.Write(reader.Root);
+            //            writer.Close();
+            //        }
+            //        catch
+            //        {
+            //            logger.Warning("Failed to write League of Legends directory path.");
+            //            file.Close();
+            //        }
+            //    }
+            //}
         }
 
         private void ReadModelsCallback(object sender, RunWorkerCompletedEventArgs e)
