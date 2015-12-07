@@ -153,7 +153,7 @@ namespace LOLViewer.GUI
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(175, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.aboutToolStripMenuItem.Text = "About LOLViewer...";
             // 
             // mainWindowStatusStrip
@@ -376,7 +376,7 @@ namespace LOLViewer.GUI
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "MainWindow";
             this.Padding = new System.Windows.Forms.Padding(10);
-            this.Text = "LOLViewer 11.16.2012";
+            this.Text = "LOLViewer";
             this.mainWindowMenuStrip.ResumeLayout(false);
             this.mainWindowMenuStrip.PerformLayout();
             this.mainWindowStatusStrip.ResumeLayout(false);
