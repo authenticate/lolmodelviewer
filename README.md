@@ -1,4 +1,4 @@
-# LOL Model Viewer
+# LOLViewer
 
 This project allows users to view models from League of Legends. It is useful for people looking to preview champion skins before purchasing or machinimists.
 
